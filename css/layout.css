@@ -46,3 +46,4 @@ main{padding:28px;max-width:1440px;margin:0 auto}
 .btn-surprise{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;padding:7px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 0 16px rgba(168,85,247,.3);transition:all .2s;margin-left:auto}
 .btn-surprise:hover{box-shadow:0 0 28px rgba(168,85,247,.5)}
 .cats-special{display:flex;gap:8px;flex-shrink:0;padding-right:12px;margin-right:4px;border-right:1px solid var(--border)}
+.btn-admin{background:linear-gradient(135deg,#ffb300,#ff6a00);color:#000}

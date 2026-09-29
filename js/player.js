@@ -11,12 +11,16 @@ function openPlayer(v){
   av.innerHTML=v.uploaderAvatar?`<img src="${v.uploaderAvatar}">`:(v.uploader||'?')[0].toUpperCase();
   document.getElementById('pupname').textContent=v.uploader;
   document.getElementById('pvid').src=v.url;
-  const isAdmin=currentUser&&currentUser.username.toLowerCase()===ADMIN_USERNAME.toLowerCase();
+  const isAdmin=!!(currentUser&&currentUser.isAdmin);
   document.getElementById('delbtn').style.display=(currentUser&&(currentUser.id===v.uploaderId||isAdmin))?'':'none';
+  const hideBtn=document.getElementById('hidebtn');
+  hideBtn.style.display=isAdmin?'':'none';
+  hideBtn.textContent=v.hidden?'👁 Rétablir':'🙈 Masquer';
+  const nRep=(v.reports||[]).length;
+  document.getElementById('repbtn').title=isAdmin?`${nRep} signalement(s)`:'Signaler';
   document.getElementById('subBtn2').style.display=(currentUser&&currentUser.id===v.uploaderId)?'none':'';
   updateLikeUI(v);
   renderComments(v.comments||[]);
-  document.getElementById('commentInputWrap').style.display=currentUser?'flex':'none';
 
   // Load sub state
   getBin(CONFIG.USERS_BIN_ID).then(users=>{
@@ -26,7 +30,7 @@ function openPlayer(v){
 
   document.getElementById('pov').classList.add('open');
   pauseMusic();
-  document.getElementById('pvid').play();
+  document.getElementById('pvid').play().catch(()=>{});
 }
 
 function closePlayer(){
@@ -40,7 +44,7 @@ document.getElementById('pov').addEventListener('click',e=>{if(e.target.id==='po
 
 // ── Instant Like/Dislike ──
 function doLike(){
-  if(!currentUser){toast('Connectez-vous pour liker','er');return;}
+  if(!requireLogin('Connectez-vous pour liker'))return;
   if(!curId) return;
   const btn=document.getElementById('likeBtn');
   const cnt=document.getElementById('likeCount');
@@ -68,7 +72,7 @@ function doLike(){
 }
 
 function doDislike(){
-  if(!currentUser){toast('Connectez-vous','er');return;}
+  if(!requireLogin('Connectez-vous pour donner votre avis'))return;
   if(!curId) return;
   const btn=document.getElementById('dislikeBtn');
   const cnt=document.getElementById('dislikeCount');
@@ -103,7 +107,7 @@ function updateLikeUI(v){
 
 // ── Instant Subscribe ──
 function doSubscribe(){
-  if(!currentUser){toast('Connectez-vous pour vous abonner','er');return;}
+  if(!requireLogin('Connectez-vous pour vous abonner'))return;
   if(!curUploaderId||curUploaderId===currentUser.id) return;
   const btn=document.getElementById('subBtn2');
   const wasSubbed=btn.classList.contains('subscribed');

@@ -34,3 +34,19 @@
 
 .link-btn{display:block;margin:12px auto 0;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline}
 .link-btn:hover{color:var(--fire)}
+
+/* la fenêtre de connexion doit passer devant le lecteur (z-index 300) et les profils (400) */
+#authOv{z-index:500}
+.admin-modal{max-width:640px}
+#adminOv{z-index:450}
+.admin-list{display:flex;flex-direction:column;gap:8px}
+.adm-row{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-size:12px}
+.adm-row img{width:64px;height:36px;object-fit:cover;border-radius:4px;background:#111;flex-shrink:0}
+.adm-main{flex:1;min-width:0}
+.adm-main b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
+.adm-main span{color:var(--muted);font-size:11px}
+.adm-btns{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.adm-btns button{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:4px 9px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.adm-btns button:hover{border-color:var(--fire)}
+.adm-btns .danger{color:#ff6060;border-color:rgba(255,60,60,.3)}
+.adm-tag{display:inline-block;background:rgba(255,150,0,.15);color:#ffaa00;border-radius:4px;padding:1px 6px;font-size:10px;margin-left:5px}

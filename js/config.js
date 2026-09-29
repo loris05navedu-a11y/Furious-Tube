@@ -20,7 +20,13 @@ const FIREBASE_CONFIG = {
   appId: "1:639306506723:web:e641526bf652cbc60700d6",
 };
 
-const ADMIN_USERNAME = 'furious shorter'; // compte admin
+// Comptes administrateurs (reconnus par e-mail, une fois l'e-mail vérifié)
+const ADMIN_EMAILS = [
+  'thaodubois005@gmail.com',
+  'loris05.nav@gmail.com',
+  'loris05.nav-edu@gmail.com',
+];
+const ADMIN_USERNAME = 'furious shorter'; // pseudo réservé (interdit aux non-admins)
 
 const CATEGORIES = ['🏠 Accueil','✨ Pour toi','🎮 Jeux','😂 Divertissement','🎵 Musique','🏆 Sport','🎨 Art & Créativité','🍳 Cuisine','✈️ Voyage','🔬 Science & Tech','💃 Danse','🐾 Animaux','📚 Éducation','🎭 Autre'];
 

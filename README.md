@@ -53,6 +53,12 @@ Auth (e-mail / mot de passe) et Firestore (vidéos + profils) utilisent le proje
 Règles Firestore recommandées : voir `firestore.rules` (à coller dans Firestore → Règles → Publier).
 Domaine autorisé requis : Authentication → Paramètres → Domaines autorisés → `<utilisateur>.github.io`.
 
+## Administrateurs
+
+Les e-mails admin sont listés dans `ADMIN_EMAILS` (`js/config.js`). Un compte n'est admin que si son **e-mail est vérifié**
+(un e-mail de vérification est envoyé à l'inscription / à la connexion). Les admins ont : suppression et masquage de n'importe quelle
+vidéo, suppression de commentaires, bannissement, et un panneau « 👑 Admin » (vidéos + utilisateurs).
+
 ## ⚠️ Sécurité
 
 La clé web Firebase est publique par conception. En revanche le secret Sightengine de `js/config.js` est visible de tous :

@@ -1,5 +1,6 @@
 /* Furious Maker — ouverture / fermeture de l'overlay */
 function openFuriousMaker(){
+  if(typeof requireLogin==='function'&&!requireLogin('Connectez-vous pour utiliser Furious Maker'))return;
   var ov=document.getElementById('fm-overlay');
   var btn=document.getElementById('fm-back-btn');
   if(!ov){alert('Furious Maker non trouvé – rechargez la page');return;}
