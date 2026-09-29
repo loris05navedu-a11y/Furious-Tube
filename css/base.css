@@ -1,0 +1,4 @@
+/* FuriousTubes — variables, reset & base */
+:root{--fire:#ff4500;--fire2:#ff6a00;--gold:#ffb300;--bg:#080808;--bg2:#101010;--bg3:#181818;--card:#111;--border:#222;--text:#f2f2f2;--muted:#666}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
