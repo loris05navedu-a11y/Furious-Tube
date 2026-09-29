@@ -82,13 +82,15 @@
     <div class="errmsg" id="authErr"></div>
     <div class="sucmsg" id="authSuc"></div>
     <div id="fLogin">
-      <div class="fg"><label>Pseudo</label><input type="text" id="lName" placeholder="Votre pseudo..."></div>
-      <div class="fg"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••"></div>
+      <div class="fg"><label>E-mail</label><input type="email" id="lEmail" placeholder="vous@exemple.com" autocomplete="email"></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••" autocomplete="current-password"></div>
       <button class="sub" id="loginBtn" onclick="doLogin()">Se connecter</button>
+      <button class="link-btn" type="button" onclick="doResetPassword()">Mot de passe oublié ?</button>
     </div>
     <div id="fReg" style="display:none">
-      <div class="fg"><label>Pseudo *</label><input type="text" id="rName" placeholder="Votre pseudo..."></div>
-      <div class="fg"><label>Mot de passe *</label><input type="password" id="rPass" placeholder="Min. 6 caractères"></div>
+      <div class="fg"><label>Pseudo *</label><input type="text" id="rName" placeholder="Votre pseudo..." autocomplete="username"></div>
+      <div class="fg"><label>E-mail *</label><input type="email" id="rEmail" placeholder="vous@exemple.com" autocomplete="email"></div>
+      <div class="fg"><label>Mot de passe *</label><input type="password" id="rPass" placeholder="Min. 6 caractères" autocomplete="new-password"></div>
       <button class="sub" id="regBtn" onclick="doRegister()">Créer mon compte</button>
     </div>
   </div>
@@ -448,7 +450,11 @@
 
 <!-- ═══════════════════ SCRIPTS ═══════════════════ -->
 <!-- FuriousTubes -->
+<!-- Firebase (SDK compat, chargé avant les modules du site) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="js/config.js"></script>
+<script src="js/firebase.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/api.js"></script>
 <script src="js/session.js"></script>

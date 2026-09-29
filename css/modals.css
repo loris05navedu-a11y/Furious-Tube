@@ -31,3 +31,6 @@
 .sub:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .errmsg{background:rgba(255,50,50,.08);border:1px solid rgba(255,50,50,.25);color:#ff7070;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:12px;display:none}
 .sucmsg{background:rgba(50,255,100,.06);border:1px solid rgba(50,255,100,.2);color:#5f5;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:12px;display:none}
+
+.link-btn{display:block;margin:12px auto 0;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline}
+.link-btn:hover{color:var(--fire)}
