@@ -10,6 +10,16 @@ const CONFIG = {
   DEFAULT_MUSIC_ID: "SwpkPf63304", // YouTube video ID
 };
 
+// Configuration web Firebase (publique par conception : la sécurité vient des règles Firebase, pas de cette clé)
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCwx5B5bNhENGsUZfeIyXnlBQ8y2ii9Czk",
+  authDomain: "furioustube-9d498.firebaseapp.com",
+  projectId: "furioustube-9d498",
+  storageBucket: "furioustube-9d498.firebasestorage.app",
+  messagingSenderId: "639306506723",
+  appId: "1:639306506723:web:e641526bf652cbc60700d6",
+};
+
 const ADMIN_USERNAME = 'furious shorter'; // compte admin
 
 const CATEGORIES = ['🏠 Accueil','✨ Pour toi','🎮 Jeux','😂 Divertissement','🎵 Musique','🏆 Sport','🎨 Art & Créativité','🍳 Cuisine','✈️ Voyage','🔬 Science & Tech','💃 Danse','🐾 Animaux','📚 Éducation','🎭 Autre'];

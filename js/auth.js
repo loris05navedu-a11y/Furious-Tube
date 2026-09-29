@@ -1,5 +1,5 @@
-/* FuriousTubes — connexion & inscription */
-// ── Auth ──
+/* FuriousTubes — connexion & inscription (Firebase Auth email / mot de passe) */
+
 function switchTab(tab){
   document.getElementById('fLogin').style.display=tab==='login'?'':'none';
   document.getElementById('fReg').style.display=tab==='register'?'':'none';
@@ -9,53 +9,118 @@ function switchTab(tab){
   document.getElementById('authSuc').style.display='none';
 }
 
+// Messages d'erreur Firebase en français
+function authErrorMsg(e){
+  const m={
+    'auth/invalid-email':'Adresse e-mail invalide',
+    'auth/email-already-in-use':'Cet e-mail a déjà un compte ❌',
+    'auth/weak-password':'Mot de passe trop faible (min. 6 caractères)',
+    'auth/user-not-found':'Aucun compte avec cet e-mail',
+    'auth/wrong-password':'Mot de passe incorrect',
+    'auth/invalid-credential':'E-mail ou mot de passe incorrect',
+    'auth/invalid-login-credentials':'E-mail ou mot de passe incorrect',
+    'auth/too-many-requests':'Trop de tentatives, réessayez dans quelques minutes',
+    'auth/network-request-failed':'Problème de connexion internet',
+    'auth/operation-not-allowed':"La connexion e-mail/mot de passe n'est pas activée dans la console Firebase",
+    'auth/unauthorized-domain':"Ce domaine n'est pas autorisé dans Firebase (Authentication → Paramètres → Domaines autorisés)",
+    'auth/user-disabled':'🚫 Ce compte a été désactivé',
+  };
+  return m[e.code]||('Erreur : '+(e.message||e.code));
+}
+
+// Retrouve (ou crée) la fiche du compte dans JSONBin, identifiée par l'uid Firebase
+async function ensureProfile(fbUser,pseudo){
+  const users=await getBin(CONFIG.USERS_BIN_ID);
+  let user=users.find(u=>u.id===fbUser.uid);
+  if(!user){
+    let name=pseudo||fbUser.displayName||(fbUser.email||'user').split('@')[0].slice(0,20);
+    if(users.some(u=>u.username?.toLowerCase()===name.toLowerCase())) name=name.slice(0,14)+'_'+Math.random().toString(36).slice(2,6);
+    user={id:fbUser.uid,username:name,email:fbUser.email,date:Date.now(),timeOnSite:0,banned:false};
+    await setBin(CONFIG.USERS_BIN_ID,[...users.filter(u=>u.id),user]);
+  }
+  return user;
+}
+
 async function doRegister(){
   const name=document.getElementById('rName').value.trim();
+  const email=document.getElementById('rEmail').value.trim();
   const pass=document.getElementById('rPass').value;
-  
-  // Validate username
-  const usernameError = checkUsername(name);
+
+  const usernameError=checkUsername(name);
   if(usernameError) return showAuthErr(usernameError);
+  if(!email) return showAuthErr('Entrez votre adresse e-mail');
   if(pass.length<6) return showAuthErr('Mot de passe trop court (min. 6 caractères)');
   if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()) return showAuthErr('Ce pseudo est réservé ❌');
+  if(!fbAuth) return showAuthErr('Firebase ne répond pas, rechargez la page');
 
   setBtn('regBtn',true,'Création...');
   try{
     const users=await getBin(CONFIG.USERS_BIN_ID);
-    if(users.find(u=>u.username?.toLowerCase()===name.toLowerCase())) return showAuthErr('Ce pseudo est déjà pris ❌');
-    const hash=await hashPwd(pass);
-    const clean=users.filter(u=>u.id);
-    clean.push({id:'u_'+Date.now(),username:name,hash,date:Date.now(),timeOnSite:0,banned:false});
-    await setBin(CONFIG.USERS_BIN_ID,clean);
-    showAuthSuc('Compte créé ! Connectez-vous 🎉');
-    switchTab('login');
-    document.getElementById('lName').value=name;
-  }catch(e){showAuthErr('Erreur : '+e.message);}
+    if(users.find(u=>u.username?.toLowerCase()===name.toLowerCase())){showAuthErr('Ce pseudo est déjà pris ❌');return;}
+    authBusy=true;
+    const cred=await fbAuth.createUserWithEmailAndPassword(email,pass);
+    await cred.user.updateProfile({displayName:name});
+    const user=await ensureProfile(cred.user,name);
+    finishLogin(user);
+    toast(`Compte créé, bienvenue ${user.username} ! 🎉`,'ok');
+  }catch(e){showAuthErr(authErrorMsg(e));}
+  authBusy=false;
   setBtn('regBtn',false,'Créer mon compte');
 }
 
 async function doLogin(){
-  const name=document.getElementById('lName').value.trim();
+  const email=document.getElementById('lEmail').value.trim();
   const pass=document.getElementById('lPass').value;
-  if(!name||!pass) return showAuthErr('Remplissez tous les champs');
+  if(!email||!pass) return showAuthErr('Remplissez tous les champs');
+  if(!fbAuth) return showAuthErr('Firebase ne répond pas, rechargez la page');
   setBtn('loginBtn',true,'Connexion...');
   try{
-    const users=await getBin(CONFIG.USERS_BIN_ID);
-    const user=users.find(u=>u.username?.toLowerCase()===name.toLowerCase());
-    if(!user) return showAuthErr('Pseudo introuvable');
-    if(user.banned) return showAuthErr('🚫 Votre compte a été banni par un administrateur.');
-    const hash=await hashPwd(pass);
-    if(hash!==user.hash) return showAuthErr('Mot de passe incorrect');
-    saveSession({id:user.id,username:user.username,avatar:user.avatar||null});
-    document.getElementById('authOv').classList.remove('open');
-    renderHeader();
-    toast(`Bienvenue ${user.username} ! 🔥`,'ok');
-    startTimeTracking();
-  }catch(e){showAuthErr('Erreur : '+e.message);}
+    authBusy=true;
+    const cred=await fbAuth.signInWithEmailAndPassword(email,pass);
+    const user=await ensureProfile(cred.user);
+    if(user.banned){await fbAuth.signOut();showAuthErr('🚫 Votre compte a été banni par un administrateur.');}
+    else{finishLogin(user);toast(`Bienvenue ${user.username} ! 🔥`,'ok');}
+  }catch(e){showAuthErr(authErrorMsg(e));}
+  authBusy=false;
   setBtn('loginBtn',false,'Se connecter');
 }
 
-function doLogout(){clearSession();renderHeader();toast('À bientôt !','ok');}
+async function doResetPassword(){
+  const email=document.getElementById('lEmail').value.trim();
+  if(!email) return showAuthErr("Entrez d'abord votre e-mail ci-dessus");
+  try{
+    await fbAuth.sendPasswordResetEmail(email);
+    showAuthSuc('E-mail de réinitialisation envoyé 📧 (pensez aux spams)');
+  }catch(e){showAuthErr(authErrorMsg(e));}
+}
+
+function finishLogin(user){
+  const wasLogged=!!currentUser;
+  saveSession({id:user.id,username:user.username,avatar:user.avatar||null});
+  document.getElementById('authOv').classList.remove('open');
+  renderHeader();
+  if(!wasLogged) startTimeTracking();
+}
+
+async function doLogout(){
+  try{if(fbAuth) await fbAuth.signOut();}catch(e){}
+  clearSession();renderHeader();toast('À bientôt !','ok');
+}
+
+// Restaure la session Firebase au chargement / la nettoie si elle n'existe plus
+let authBusy=false;
+function watchAuth(){
+  if(!fbAuth) return;
+  fbAuth.onAuthStateChanged(async fbUser=>{
+    if(authBusy) return;               // doLogin / doRegister gèrent eux-mêmes la suite
+    if(!fbUser){if(currentUser){clearSession();renderHeader();}return;}
+    try{
+      const user=await ensureProfile(fbUser);
+      if(user.banned){await fbAuth.signOut();clearSession();renderHeader();return;}
+      finishLogin(user);
+    }catch(e){/* JSONBin indisponible : on garde la session locale */}
+  });
+}
 
 function showAuthErr(msg){
   const e=document.getElementById('authErr');e.textContent=msg;e.style.display='block';
