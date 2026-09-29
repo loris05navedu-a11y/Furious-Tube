@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="FuriousTubes — uploadez et partagez vos vidéos, montez-les avec Furious Maker.">
+<meta name="theme-color" content="#080808">
+<title>FuriousTubes</title>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+<!-- Polices -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Sora:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Styles -->
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/music.css">
+<link rel="stylesheet" href="css/cards.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/player.css">
+<link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/toast.css">
+<link rel="stylesheet" href="css/maker.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">FuriousTubes</div>
+  <div class="spacer"></div>
+  <button class="btn-maker" onclick="openFuriousMaker()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-14 9V3z" fill="#000"/><rect x="17" y="3" width="3" height="18" rx="1.5" fill="#000" opacity=".4"/></svg> Furious Maker</button>
+  <a class="btn-donate" href="https://www.paypal.com/donate" target="_blank" rel="noopener">💙 Soutenir</a>
+  <div id="headerRight"></div>
+</header>
+
+<!-- MUSIC BAR -->
+<div class="music-bar">
+  <span class="note">🎵</span>
+  <span class="music-title">Musique : <span id="musicTitle">Chargement...</span></span>
+  <div class="vol-wrap">
+    <span style="font-size:12px">🔈</span>
+    <input type="range" id="volSlider" min="0" max="100" value="30" oninput="setVolume(this.value)">
+    <span style="font-size:12px">🔊</span>
+  </div>
+  <button class="music-btn" id="musicToggle" onclick="toggleMusic()" title="Pause/Play">⏸</button>
+  <div class="custom-url-wrap">
+    <input type="text" id="customYtUrl" placeholder="URL YouTube perso..." onkeydown="if(event.key==='Enter') changeMusic()">
+    <button class="music-btn" onclick="changeMusic()" title="Changer">✓</button>
+  </div>
+</div>
+<div id="ytPlayer"></div>
+
+
+<div class="hero">
+  <h1>FURIOUS<br><span class="outline">TUBES</span></h1>
+  <p>Uploadez vos vidéos — tout le monde peut les voir.</p>
+</div>
+
+<!-- CATEGORIES -->
+<div class="cats" id="catsBar"></div>
+
+<main>
+  <div class="bar">
+    <div class="bar-title">VIDÉOS</div>
+    <span class="pill" id="count">—</span>
+    <button class="btn-surprise" onclick="surpriseMe()">🎲 Surprise me !</button>
+  </div>
+  <div class="grid" id="grid">
+    <div class="empty"><div class="icon">⏳</div><h3>CHARGEMENT</h3></div>
+  </div>
+</main>
+
+<!-- AUTH MODAL -->
+<div class="ov" id="authOv">
+  <div class="modal">
+    <h2>🔥 <span>FURIOUSTUBES</span></h2>
+    <div class="tabs">
+      <button class="tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
+      <button class="tab" id="tabReg" onclick="switchTab('register')">Inscription</button>
+    </div>
+    <div class="errmsg" id="authErr"></div>
+    <div class="sucmsg" id="authSuc"></div>
+    <div id="fLogin">
+      <div class="fg"><label>Pseudo</label><input type="text" id="lName" placeholder="Votre pseudo..."></div>
+      <div class="fg"><label>Mot de passe</label><input type="password" id="lPass" placeholder="••••••••"></div>
+      <button class="sub" id="loginBtn" onclick="doLogin()">Se connecter</button>
+    </div>
+    <div id="fReg" style="display:none">
+      <div class="fg"><label>Pseudo *</label><input type="text" id="rName" placeholder="Votre pseudo..."></div>
+      <div class="fg"><label>Mot de passe *</label><input type="password" id="rPass" placeholder="Min. 6 caractères"></div>
+      <button class="sub" id="regBtn" onclick="doRegister()">Créer mon compte</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="ov" id="upOv">
+  <div class="modal">
+    <button class="x" onclick="closeUp()">✕</button>
+    <h2>⬆ <span>IMPORTER</span></h2>
+    <div class="drop" id="drop">
+      <div class="di">🎬</div>
+      <p><strong>Cliquez</strong> ou glissez votre vidéo ici</p>
+      <p style="margin-top:5px;font-size:11px">MP4, WebM, MOV — max 100 MB</p>
+    </div>
+    <input type="file" id="fi" accept="video/*">
+    <div id="fprev" style="font-size:12px;color:var(--fire);margin-bottom:12px;display:none"></div>
+    <div class="fg"><label>Titre *</label><input type="text" id="vtitle" placeholder="Titre de votre vidéo..."></div>
+    <div class="fg">
+      <label>Catégorie *</label>
+      <select id="vcat">
+        <option value="">-- Choisir une catégorie --</option>
+        <option value="🎮 Jeux">🎮 Jeux</option>
+        <option value="😂 Divertissement">😂 Divertissement</option>
+        <option value="🎵 Musique">🎵 Musique</option>
+        <option value="🏆 Sport">🏆 Sport</option>
+        <option value="🎨 Art & Créativité">🎨 Art & Créativité</option>
+        <option value="🍳 Cuisine">🍳 Cuisine</option>
+        <option value="✈️ Voyage">✈️ Voyage</option>
+        <option value="🔬 Science & Tech">🔬 Science & Tech</option>
+        <option value="💃 Danse">💃 Danse</option>
+        <option value="🐾 Animaux">🐾 Animaux</option>
+        <option value="📚 Éducation">📚 Éducation</option>
+        <option value="🎭 Autre">🎭 Autre</option>
+      </select>
+    </div>
+    <div class="pw" id="pw"><div class="pb" id="pb"></div></div>
+    <div class="ptext" id="ptext"></div>
+    <div class="errmsg" id="uerr"></div>
+    <button class="sub" id="subBtn" onclick="doUpload()">⬆ Publier la vidéo</button>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<div class="pov" id="pov">
+  <div class="pbox">
+    <div class="ph">
+      <div class="ph-left">
+        <h3 id="ptitle"></h3>
+        <div class="ph-meta">
+          <span class="ph-cat" id="pcat"></span>
+          <span id="pdate"></span>
+        </div>
+      </div>
+      <button class="x" style="position:static" onclick="closePlayer()">✕</button>
+    </div>
+    <video id="pvid" controls></video>
+    <div class="pf">
+      <div class="pf-left">
+        <div class="pup" id="pupWrap" onclick="openProfileById(curUploaderId, curUploaderName)">
+          <div class="av-md" id="pav"></div>
+          <div id="pupname" style="font-size:12px;color:var(--text);font-weight:500"></div>
+        </div>
+        <button class="sub-btn" id="subBtn2" onclick="doSubscribe()">➕ S'abonner</button>
+      </div>
+      <div class="pf-right">
+        <button class="like-btn" id="likeBtn" onclick="doLike()">👍 <span id="likeCount">0</span></button>
+        <button class="like-btn" id="dislikeBtn" onclick="doDislike()">👎 <span id="dislikeCount">0</span></button>
+        <button class="warn-btn" onclick="doReport()">⚠</button>
+        <button class="delbtn" id="delbtn" onclick="doDelete()" style="display:none">🗑</button>
+      </div>
+    </div>
+    <!-- COMMENTS -->
+    <div class="comments-section">
+      <div class="comments-title">Commentaires (<span id="commentCount">0</span>)</div>
+      <div class="comment-input-wrap" id="commentInputWrap" style="display:none">
+        <input type="text" id="commentInput" placeholder="Ajouter un commentaire..." maxlength="300" onkeydown="if(event.key==='Enter') sendComment()">
+        <button class="comment-send" onclick="sendComment()">Envoyer</button>
+      </div>
+      <div id="commentsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="profile-ov" id="profileOv" onclick="if(event.target.id==='profileOv')closeProfile()">
+  <div class="profile-box">
+    <div class="profile-banner">
+      <div class="profile-avatar" id="profAvatarWrap" onclick="tryEditAvatar()">
+        <span id="profAvatarInitial"></span>
+        <img id="profAvatarImg" src="" style="display:none">
+        <div class="edit-overlay" id="editOverlay" style="display:none">✏️</div>
+      </div>
+    </div>
+    <input type="file" id="avatarFileInput" accept="image/*">
+    <div class="profile-body">
+      <div class="profile-head">
+        <div>
+          <div class="profile-name" id="profName"></div>
+          <div class="profile-since" id="profSince"></div>
+        </div>
+        <div class="profile-actions">
+          <button class="ban-btn" id="banBtn" onclick="doBan()" style="display:none">🚫 Bannir</button>
+          <button class="x" style="position:static" onclick="closeProfile()">✕</button>
+        </div>
+      </div>
+      <div class="profile-stats">
+        <div class="stat-box"><div class="stat-num" id="profSubs">0</div><div class="stat-label">Abonnés</div></div>
+        <div class="stat-box"><div class="stat-num" id="profVids">0</div><div class="stat-label">Vidéos</div></div>
+        <div class="stat-box"><div class="stat-num" id="profTime">0h</div><div class="stat-label">Sur le site</div></div>
+      </div>
+      <div class="profile-videos">
+        <h4>Ses vidéos</h4>
+        <div class="pv-list" id="profVideoList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><div class="td"></div><span id="tmsg"></span></div>
+
+<!-- ══ FURIOUS MAKER ══════════════════════════════════════ -->
+<div id="fm-overlay"><!-- ─── MENU SCREEN ──────────────────────────────────── -->
+<div id="menu-screen">
+  <div class="menu-bg"></div>
+  <div class="menu-grid-bg"></div>
+
+  <div class="fm-logo">Furious Maker</div>
+  <div class="fm-tag">Éditeur Vidéo Pro</div>
+
+  <!-- Theme selector -->
+  <div class="theme-row">
+    <span class="theme-lbl">Thème</span>
+    <div class="theme-opts">
+      <div class="thopt thopt-dark on" onclick="setTheme('dark',this)" title="Sombre"></div>
+      <div class="thopt thopt-light" onclick="setTheme('light',this)" title="Clair"></div>
+    </div>
+  </div>
+
+  <!-- Action cards -->
+  <div class="menu-cards">
+    <div class="mcard mcard-new" onclick="enterEditor(true)">
+      <div class="mcard-icon">▶</div>
+      <div class="mcard-title">Nouveau projet</div>
+      <div class="mcard-sub">Créer une vidéo<br>de zéro</div>
+    </div>
+    <div class="mcard" onclick="document.getElementById('fm-fi2').click()">
+      <div class="mcard-icon">📂</div>
+      <div class="mcard-title">Ouvrir un fichier</div>
+      <div class="mcard-sub">Importer une vidéo<br>existante</div>
+    </div>
+  </div>
+
+  <!-- Recent projects -->
+  <div class="recent-section">
+    <div class="recent-title">Projets récents</div>
+    <div id="recent-grid"></div>
+  </div>
+
+  <div class="menu-footer">Furious Maker © 2025 — Tous droits réservés</div>
+  <input type="file" id="fm-fi2" accept="video/*,audio/*,image/*" multiple style="display:none" onchange="enterEditorWithFiles(this.files)">
+</div>
+
+<!-- ─── EDITOR APP ───────────────────────────────────── -->
+<div id="fm-app">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <button class="back-btn" onclick="goBack()">← Menu</button>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;flex-shrink:0"><defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6a00"/><stop offset="100%" stop-color="#ff9a3c"/></linearGradient></defs><path d="M5 3l14 9-14 9V3z" fill="url(#lg1)"/><rect x="17" y="3" width="3" height="18" rx="1.5" fill="url(#lg1)" opacity=".4"/></svg>
+    Furious Maker
+  </div>
+  <div class="proj-name" contenteditable="true" spellcheck="false">Sans titre</div>
+  <div class="topbar-right">
+    <button class="btn" onclick="document.getElementById('fm-fi').click()">⊕ Importer</button>
+    <button class="btn" onclick="undoLast()">↩ Annuler</button>
+    <button class="btn" onclick="splitAtPlayhead()">✂ Couper</button>
+    <button class="btn btn-acc" onclick="doExport()">↑ Exporter</button>
+  </div>
+  <input type="file" id="fm-fi" accept="video/*,audio/*,image/*" multiple style="display:none" onchange="importFiles(this.files)">
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <aside class="lpanel">
+    <div class="ptabs">
+      <div class="ptab on" onclick="lTab(this,'media')">Médias</div>
+      <div class="ptab" onclick="lTab(this,'tools')">Outils</div>
+    </div>
+    <div class="pcontent">
+      <div id="ps-media" class="psec on">
+        <div class="dropzone" id="dz" onclick="document.getElementById('fm-fi').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="this.classList.remove('drag');importFiles(event.dataTransfer.files);event.preventDefault()">
+          ↑ Glisser-déposer<br>ou cliquer pour importer
+        </div>
+        <div class="mgrid" id="mgrid"></div>
+      </div>
+      <div id="ps-tools" class="psec">
+        <div class="tlist">
+          <div class="titem on" onclick="setTool(this,'select')"><div class="ticon">↖</div><div><div>Sélection</div><div class="tsub">Déplacer & sélectionner</div></div></div>
+          <div class="titem" onclick="setTool(this,'cut')"><div class="ticon">✂</div><div><div>Couper</div><div class="tsub">Diviser à la tête</div></div></div>
+          <div class="titem" onclick="setTool(this,'text')"><div class="ticon">T</div><div><div>Texte</div><div class="tsub">Ajouter un texte</div></div></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER PREVIEW -->
+  <div class="preview">
+    <div class="pview" id="pview">
+      <div class="novid" id="novid">
+        <div class="novid-icon">🎬</div>
+        <h3>Importez une vidéo pour commencer</h3>
+        <p>Glissez vos fichiers ou cliquez sur Importer</p>
+        <button class="btn" style="margin-top:8px" onclick="document.getElementById('fm-fi').click()">⊕ Choisir</button>
+      </div>
+      <div class="vwrap" id="vwrap" style="display:none">
+        <video id="fm-vid" playsinline preload="auto"></video>
+        <div class="toverlays" id="toverlays"></div>
+      </div>
+    </div>
+    <div class="pbar">
+      <div class="timedisp"><span id="ct">0:00.0</span> / <span id="tt">0:00.0</span></div>
+      <div class="ctrls">
+        <button class="cbtn" onclick="sk(-10)" title="-10s">⏮</button>
+        <button class="cbtn" onclick="sk(-1/30)">‹</button>
+        <button class="cbtn play" id="playbtn" onclick="togglePlay()">▶</button>
+        <button class="cbtn" onclick="sk(1/30)">›</button>
+        <button class="cbtn" onclick="sk(10)" title="+10s">⏭</button>
+      </div>
+      <div class="volsec">
+        <span style="font-size:13px;cursor:pointer;color:var(--tx2)" onclick="vid.muted=!vid.muted">🔊</span>
+        <input type="range" id="volslider" min="0" max="100" value="80" style="width:55px" oninput="setVol(this.value)">
+        <span class="spdbadge" onclick="cycleSp()" id="spdlbl">1×</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <aside class="rpanel">
+    <div class="rtabs">
+      <div class="rtab on" onclick="rTab(this,'filters')">Filtres</div>
+      <div class="rtab" onclick="rTab(this,'text')">Texte</div>
+      <div class="rtab" onclick="rTab(this,'speed')">Vitesse</div>
+      <div class="rtab" onclick="rTab(this,'audio')">Audio</div>
+    </div>
+    <div class="rcontent">
+
+      <!-- FILTERS -->
+      <div id="rs-filters" class="rsec on">
+        <div class="sectitle">Préréglages</div>
+        <div class="fpresets">
+          <div class="fpre on" onclick="applyPre(this,'none')" data-p="none"><div class="fpre-bg" style="background:linear-gradient(135deg,#1a2030,#0a1020)"></div><span class="fpre-lbl">Normal</span></div>
+          <div class="fpre" onclick="applyPre(this,'vivid')" data-p="vivid"><div class="fpre-bg" style="background:linear-gradient(135deg,#2a1040,#401020);filter:saturate(2)"></div><span class="fpre-lbl">Vivid</span></div>
+          <div class="fpre" onclick="applyPre(this,'cool')" data-p="cool"><div class="fpre-bg" style="background:linear-gradient(135deg,#102030,#203040)"></div><span class="fpre-lbl">Cool</span></div>
+          <div class="fpre" onclick="applyPre(this,'warm')" data-p="warm"><div class="fpre-bg" style="background:linear-gradient(135deg,#402010,#301008)"></div><span class="fpre-lbl">Warm</span></div>
+          <div class="fpre" onclick="applyPre(this,'mono')" data-p="mono"><div class="fpre-bg" style="background:linear-gradient(135deg,#2a2a2a,#101010)"></div><span class="fpre-lbl">Mono</span></div>
+          <div class="fpre" onclick="applyPre(this,'fade')" data-p="fade"><div class="fpre-bg" style="background:linear-gradient(135deg,#3a3040,#253038);opacity:.5"></div><span class="fpre-lbl">Fade</span></div>
+        </div>
+        <div class="sectitle">Réglages manuels</div>
+        <div class="fgrp"><div class="flbl"><span>Luminosité</span><span class="fval" id="fv-br">100%</span></div><input type="range" id="f-br" min="0" max="200" value="100" oninput="applyF()"></div>
+        <div class="fgrp"><div class="flbl"><span>Contraste</span><span class="fval" id="fv-co">100%</span></div><input type="range" id="f-co" min="0" max="200" value="100" oninput="applyF()"></div>
+        <div class="fgrp"><div class="flbl"><span>Saturation</span><span class="fval" id="fv-sa">100%</span></div><input type="range" id="f-sa" min="0" max="200" value="100" oninput="applyF()"></div>
+        <div class="fgrp"><div class="flbl"><span>Température</span><span class="fval" id="fv-hu">0°</span></div><input type="range" id="f-hu" min="-60" max="60" value="0" oninput="applyF()"></div>
+        <div class="fgrp"><div class="flbl"><span>Flou</span><span class="fval" id="fv-bl">0px</span></div><input type="range" id="f-bl" min="0" max="20" value="0" oninput="applyF()"></div>
+      </div>
+
+      <!-- TEXT -->
+      <div id="rs-text" class="rsec">
+        <div class="sectitle">Ajouter un texte</div>
+        <div class="tpresets">
+          <div class="tpre" onclick="addTov('Titre')">Titre</div>
+          <div class="tpre" onclick="addTov('Sous-titre')">Sous-titre</div>
+          <div class="tpre" onclick="addTov('Caption')">Caption</div>
+          <div class="tpre" onclick="addTov('Texte')">Texte libre</div>
+        </div>
+        <div class="igrp"><div class="ilbl">Contenu</div><input type="text" class="tinput" id="tc-in" placeholder="Votre texte..." oninput="updSelTov()"></div>
+        <div class="igrp"><div class="ilbl">Taille — <span id="ts-val">28px</span></div><input type="range" min="10" max="80" value="28" id="ts-in" oninput="updTovSize(this.value)"></div>
+        <div class="igrp">
+          <div class="ilbl">Couleur</div>
+          <div class="swatches">
+            <div class="sw on" style="background:#fff" onclick="swCol(this,'#fff')"></div>
+            <div class="sw" style="background:#000" onclick="swCol(this,'#000')"></div>
+            <div class="sw" style="background:#00d4ff" onclick="swCol(this,'#00d4ff')"></div>
+            <div class="sw" style="background:#ff3d71" onclick="swCol(this,'#ff3d71')"></div>
+            <div class="sw" style="background:#ffb800" onclick="swCol(this,'#ffb800')"></div>
+            <div class="sw" style="background:#00e676" onclick="swCol(this,'#00e676')"></div>
+            <div class="sw" style="background:#e040fb" onclick="swCol(this,'#e040fb')"></div>
+            <div class="sw" style="background:#ff6d00" onclick="swCol(this,'#ff6d00')"></div>
+          </div>
+        </div>
+        <div id="tov-hint" style="font-size:11px;color:var(--tx3);margin-top:10px;padding:9px;background:var(--s3);border-radius:6px;text-align:center;line-height:1.6">Ajoutez un texte ci-dessus<br>ou cliquez sur un texte existant</div>
+      </div>
+
+      <!-- SPEED -->
+      <div id="rs-speed" class="rsec">
+        <div class="sectitle">Vitesse</div>
+        <div class="spgrid">
+          <div class="spopt" onclick="setSp(0.25,this)">0.25×</div>
+          <div class="spopt" onclick="setSp(0.5,this)">0.5×</div>
+          <div class="spopt" onclick="setSp(0.75,this)">0.75×</div>
+          <div class="spopt on" onclick="setSp(1,this)">1×</div>
+          <div class="spopt" onclick="setSp(1.25,this)">1.25×</div>
+          <div class="spopt" onclick="setSp(1.5,this)">1.5×</div>
+          <div class="spopt" onclick="setSp(2,this)">2×</div>
+          <div class="spopt" onclick="setSp(4,this)">4×</div>
+        </div>
+        <div class="fgrp"><div class="flbl"><span>Personnalisé</span><span class="fval" id="spc-val">1.00×</span></div><input type="range" id="spc-in" min=".1" max="4" step=".05" value="1" oninput="setSp(parseFloat(this.value))"></div>
+      </div>
+
+      <!-- AUDIO -->
+      <div id="rs-audio" class="rsec">
+        <div class="sectitle">Audio</div>
+        <div class="fgrp"><div class="flbl"><span>Volume</span><span class="fval" id="av-val">80%</span></div><input type="range" id="av-in" min="0" max="100" value="80" oninput="setVolR(this.value)"></div>
+        <div class="fgrp"><div class="flbl"><span>Fondu entrant</span><span class="fval" id="fi-val">0s</span></div><input type="range" id="fi-in" min="0" max="5" step=".1" value="0" oninput="document.getElementById('fi-val').textContent=this.value+'s'"></div>
+        <div class="fgrp"><div class="flbl"><span>Fondu sortant</span><span class="fval" id="fo-val">0s</span></div><input type="range" id="fo-in" min="0" max="5" step=".1" value="0" oninput="document.getElementById('fo-val').textContent=this.value+'s'"></div>
+      </div>
+
+    </div>
+  </aside>
+</div>
+
+<!-- TIMELINE -->
+<div class="timeline">
+  <div class="tlhdr">
+    <div class="thlbl">Timeline</div>
+    <div class="ruler-wrap"><canvas id="tl-ruler"></canvas></div>
+    <div class="tlzoom">
+      <button class="btn" style="padding:2px 7px;font-size:11px" onclick="zoom(-1)">−</button>
+      <span id="zlbl" style="min-width:30px;text-align:center">1×</span>
+      <button class="btn" style="padding:2px 7px;font-size:11px" onclick="zoom(1)">+</button>
+    </div>
+  </div>
+  <div class="tlbody" id="tlbody">
+    <div class="trow"><div class="trlbl">🎬 Video</div><div class="trarea" id="tr-vid"><div class="ph" id="ph" style="height:100%"></div></div></div>
+    <div class="trow"><div class="trlbl">🎵 Audio</div><div class="trarea" id="tr-aud"></div></div>
+    <div class="trow"><div class="trlbl">💬 Texte</div><div class="trarea" id="tr-txt"></div></div>
+  </div>
+</div>
+
+</div>
+
+<!-- Context menu -->
+<div class="ctx" id="ctx">
+  <div class="ctxitem" onclick="ctxDo('dup')">⧉ Dupliquer</div>
+  <div class="ctxitem" onclick="ctxDo('split')">✂ Couper ici</div>
+  <div class="ctxitem danger" onclick="ctxDo('del')">⊗ Supprimer</div>
+</div>
+
+<div class="toast" id="fm-toast"></div></div>
+<button id="fm-back-btn" onclick="closeFuriousMaker()">← FuriousTubes</button>
+
+<!-- ═══════════════════ SCRIPTS ═══════════════════ -->
+<!-- FuriousTubes -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/api.js"></script>
+<script src="js/session.js"></script>
+<script src="js/header.js"></script>
+<script src="js/categories.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/feed.js"></script>
+<script src="js/upload.js"></script>
+<script src="js/player.js"></script>
+<script src="js/comments.js"></script>
+<script src="js/moderation.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/music.js"></script>
+
+<!-- Furious Maker -->
+<script src="js/maker/launcher.js"></script>
+<script src="js/maker/state.js"></script>
+<script src="js/maker/media.js"></script>
+<script src="js/maker/playback.js"></script>
+<script src="js/maker/timeline.js"></script>
+<script src="js/maker/filters.js"></script>
+<script src="js/maker/text.js"></script>
+<script src="js/maker/edit.js"></script>
+<script src="js/maker/export.js"></script>
+<script src="js/maker/ui.js"></script>
+<script src="js/maker/projects.js"></script>
+
+<!-- Démarrage -->
+<script src="js/main.js"></script>
+
+<!-- YouTube IFrame API (chargée après music.js qui définit onYouTubeIframeAPIReady) -->
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
