@@ -2,9 +2,9 @@
 const CONFIG = {
   CLOUD_NAME:    "dol7ga850",
   UPLOAD_PRESET: "p7khovfu",
-  VIDEOS_BIN_ID: "69e6190e36566621a8d19c30",
-  USERS_BIN_ID:  "69e729d236566621a8d63ae2",
-  JSONBIN_KEY:   "$2a$10$X9eJob5ggsHbGd5vF.HTTeofBE7wy7TXpZp.ccD0jR0YL0mvxZnZS",
+  // Collections Firestore (documents "bins/videos" et "bins/users")
+  VIDEOS_BIN_ID: "videos",
+  USERS_BIN_ID:  "users",
   SIGHTENGINE_USER:   "1546443",
   SIGHTENGINE_SECRET: "Sk2XaY4fhrSqiZGtS3t6o53Tjwer7oKN",
   DEFAULT_MUSIC_ID: "SwpkPf63304", // YouTube video ID

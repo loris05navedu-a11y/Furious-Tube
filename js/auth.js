@@ -28,14 +28,14 @@ function authErrorMsg(e){
   return m[e.code]||('Erreur : '+(e.message||e.code));
 }
 
-// Retrouve (ou crée) la fiche du compte dans JSONBin, identifiée par l'uid Firebase
+// Retrouve (ou crée) la fiche du compte dans Firestore, identifiée par l'uid Firebase
 async function ensureProfile(fbUser,pseudo){
   const users=await getBin(CONFIG.USERS_BIN_ID);
   let user=users.find(u=>u.id===fbUser.uid);
   if(!user){
     let name=pseudo||fbUser.displayName||(fbUser.email||'user').split('@')[0].slice(0,20);
     if(users.some(u=>u.username?.toLowerCase()===name.toLowerCase())) name=name.slice(0,14)+'_'+Math.random().toString(36).slice(2,6);
-    user={id:fbUser.uid,username:name,email:fbUser.email,date:Date.now(),timeOnSite:0,banned:false};
+    user={id:fbUser.uid,username:name,date:Date.now(),timeOnSite:0,banned:false};
     await setBin(CONFIG.USERS_BIN_ID,[...users.filter(u=>u.id),user]);
   }
   return user;
@@ -118,7 +118,7 @@ function watchAuth(){
       const user=await ensureProfile(fbUser);
       if(user.banned){await fbAuth.signOut();clearSession();renderHeader();return;}
       finishLogin(user);
-    }catch(e){/* JSONBin indisponible : on garde la session locale */}
+    }catch(e){/* Firestore indisponible : on garde la session locale */}
   });
 }
 
