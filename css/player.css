@@ -41,3 +41,4 @@
 .comment-text{font-size:12px;color:var(--text);margin-top:2px;line-height:1.5}
 .comment-date{font-size:10px;color:var(--muted);margin-top:3px}
 .no-comments{text-align:center;font-size:12px;color:var(--muted);padding:12px 0}
+.comment-del{color:#ff6060;cursor:pointer}.comment-del:hover{text-decoration:underline}

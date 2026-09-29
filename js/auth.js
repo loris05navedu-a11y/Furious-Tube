@@ -9,6 +9,22 @@ function switchTab(tab){
   document.getElementById('authSuc').style.display='none';
 }
 
+// ── Accès réservé aux comptes connectés ──
+function openAuth(tab){
+  document.getElementById('authOv').classList.add('open');
+  switchTab(tab||'login');
+}
+function requireLogin(msg){
+  if(currentUser) return true;
+  toast(msg||'Connectez-vous pour continuer','er');
+  openAuth('login');
+  return false;
+}
+
+// ── Admin : e-mail dans la liste ET e-mail vérifié (sinon n'importe qui pourrait s'inscrire avec cette adresse) ──
+function isAdminEmail(email){return !!email&&ADMIN_EMAILS.includes(email.toLowerCase());}
+function isAdminFbUser(fbUser){return !!fbUser&&fbUser.emailVerified&&isAdminEmail(fbUser.email);}
+
 // Messages d'erreur Firebase en français
 function authErrorMsg(e){
   const m={
@@ -38,7 +54,24 @@ async function ensureProfile(fbUser,pseudo){
     user={id:fbUser.uid,username:name,date:Date.now(),timeOnSite:0,banned:false};
     await setBin(CONFIG.USERS_BIN_ID,[...users.filter(u=>u.id),user]);
   }
+  if(isAdminFbUser(fbUser)&&!user.admin){
+    user.admin=true;
+    try{
+      const all=await getBin(CONFIG.USERS_BIN_ID);
+      const i=all.findIndex(u=>u.id===user.id);
+      if(i>=0){all[i].admin=true;await setBin(CONFIG.USERS_BIN_ID,all);}
+    }catch(e){}
+  }
   return user;
+}
+
+// E-mail de vérification (obligatoire pour être reconnu admin)
+async function verifyAdminEmail(fbUser){
+  if(!isAdminEmail(fbUser.email)||fbUser.emailVerified) return;
+  try{
+    await fbUser.sendEmailVerification();
+    toast('📧 Vérifiez votre e-mail (lien envoyé) pour activer le mode admin','ok');
+  }catch(e){}
 }
 
 async function doRegister(){
@@ -50,7 +83,7 @@ async function doRegister(){
   if(usernameError) return showAuthErr(usernameError);
   if(!email) return showAuthErr('Entrez votre adresse e-mail');
   if(pass.length<6) return showAuthErr('Mot de passe trop court (min. 6 caractères)');
-  if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()) return showAuthErr('Ce pseudo est réservé ❌');
+  if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()&&!isAdminEmail(email)) return showAuthErr('Ce pseudo est réservé ❌');
   if(!fbAuth) return showAuthErr('Firebase ne répond pas, rechargez la page');
 
   setBtn('regBtn',true,'Création...');
@@ -60,8 +93,9 @@ async function doRegister(){
     authBusy=true;
     const cred=await fbAuth.createUserWithEmailAndPassword(email,pass);
     await cred.user.updateProfile({displayName:name});
+    cred.user.sendEmailVerification().catch(()=>{});
     const user=await ensureProfile(cred.user,name);
-    finishLogin(user);
+    finishLogin(user,cred.user);
     toast(`Compte créé, bienvenue ${user.username} ! 🎉`,'ok');
   }catch(e){showAuthErr(authErrorMsg(e));}
   authBusy=false;
@@ -79,7 +113,7 @@ async function doLogin(){
     const cred=await fbAuth.signInWithEmailAndPassword(email,pass);
     const user=await ensureProfile(cred.user);
     if(user.banned){await fbAuth.signOut();showAuthErr('🚫 Votre compte a été banni par un administrateur.');}
-    else{finishLogin(user);toast(`Bienvenue ${user.username} ! 🔥`,'ok');}
+    else{finishLogin(user,cred.user);toast(`Bienvenue ${user.username} ! 🔥`,'ok');verifyAdminEmail(cred.user);}
   }catch(e){showAuthErr(authErrorMsg(e));}
   authBusy=false;
   setBtn('loginBtn',false,'Se connecter');
@@ -94,9 +128,9 @@ async function doResetPassword(){
   }catch(e){showAuthErr(authErrorMsg(e));}
 }
 
-function finishLogin(user){
+function finishLogin(user,fbUser){
   const wasLogged=!!currentUser;
-  saveSession({id:user.id,username:user.username,avatar:user.avatar||null});
+  saveSession({id:user.id,username:user.username,avatar:user.avatar||null,isAdmin:isAdminFbUser(fbUser)});
   document.getElementById('authOv').classList.remove('open');
   renderHeader();
   if(!wasLogged) startTimeTracking();
@@ -115,9 +149,11 @@ function watchAuth(){
     if(authBusy) return;               // doLogin / doRegister gèrent eux-mêmes la suite
     if(!fbUser){if(currentUser){clearSession();renderHeader();}return;}
     try{
+      if(isAdminEmail(fbUser.email)&&!fbUser.emailVerified){try{await fbUser.reload();}catch(e){}}
       const user=await ensureProfile(fbUser);
       if(user.banned){await fbAuth.signOut();clearSession();renderHeader();return;}
-      finishLogin(user);
+      finishLogin(user,fbUser);
+      renderHeader();
     }catch(e){/* Firestore indisponible : on garde la session locale */}
   });
 }

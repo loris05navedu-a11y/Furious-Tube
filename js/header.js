@@ -10,9 +10,10 @@ function renderHeader(){
         <div class="av-xs">${pic}</div>
         <span>${currentUser.username}</span>
       </div>
+      ${currentUser.isAdmin?'<button class="btn btn-admin" onclick="openAdmin()">👑 Admin</button>':''}
       <button class="btn btn-primary" onclick="openUpload()">⬆ Importer</button>
       <button class="btn btn-ghost" onclick="doLogout()">✕ Déconnexion</button>`;
   } else {
-    el.innerHTML=`<button class="btn btn-primary" onclick="document.getElementById('authOv').classList.add('open')">Connexion</button>`;
+    el.innerHTML=`<button class="btn btn-primary" onclick="openAuth()">Connexion</button>`;
   }
 }

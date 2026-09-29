@@ -57,8 +57,8 @@ async function openProfileById(uid,uname){
 
     // Show ban button for admin (not on own profile, not on other admin)
     const banBtn=document.getElementById('banBtn');
-    const isAdmin=currentUser&&currentUser.username.toLowerCase()===ADMIN_USERNAME.toLowerCase();
-    const targetIsAdmin=uname?.toLowerCase()===ADMIN_USERNAME.toLowerCase();
+    const isAdmin=!!(currentUser&&currentUser.isAdmin);
+    const targetIsAdmin=!!user?.admin;
     if(banBtn) banBtn.style.display=(isAdmin&&!isMe&&!targetIsAdmin)?'':'none';
     if(banBtn&&user?.banned) banBtn.textContent='✅ Débannir';
     if(banBtn) banBtn.dataset.banned=user?.banned?'1':'0';

@@ -134,6 +134,19 @@
   </div>
 </div>
 
+<!-- ADMIN PANEL -->
+<div class="ov" id="adminOv">
+  <div class="modal admin-modal">
+    <button class="x" onclick="closeAdmin()">✕</button>
+    <h2>👑 <span>ADMINISTRATION</span></h2>
+    <div class="tabs">
+      <button class="tab active" id="admTabVids" onclick="adminTab('videos')">Vidéos</button>
+      <button class="tab" id="admTabUsers" onclick="adminTab('users')">Utilisateurs</button>
+    </div>
+    <div id="adminList" class="admin-list"></div>
+  </div>
+</div>
+
 <!-- PLAYER -->
 <div class="pov" id="pov">
   <div class="pbox">
@@ -159,15 +172,16 @@
       <div class="pf-right">
         <button class="like-btn" id="likeBtn" onclick="doLike()">👍 <span id="likeCount">0</span></button>
         <button class="like-btn" id="dislikeBtn" onclick="doDislike()">👎 <span id="dislikeCount">0</span></button>
-        <button class="warn-btn" onclick="doReport()">⚠</button>
+        <button class="warn-btn" id="repbtn" onclick="doReport()">⚠</button>
+        <button class="warn-btn" id="hidebtn" onclick="adminToggleHide()" style="display:none">🙈 Masquer</button>
         <button class="delbtn" id="delbtn" onclick="doDelete()" style="display:none">🗑</button>
       </div>
     </div>
     <!-- COMMENTS -->
     <div class="comments-section">
       <div class="comments-title">Commentaires (<span id="commentCount">0</span>)</div>
-      <div class="comment-input-wrap" id="commentInputWrap" style="display:none">
-        <input type="text" id="commentInput" placeholder="Ajouter un commentaire..." maxlength="300" onkeydown="if(event.key==='Enter') sendComment()">
+      <div class="comment-input-wrap" id="commentInputWrap">
+        <input type="text" id="commentInput" placeholder="Ajouter un commentaire..." onfocus="if(!currentUser){this.blur();requireLogin('Connectez-vous pour commenter');}" maxlength="300" onkeydown="if(event.key==='Enter') sendComment()">
         <button class="comment-send" onclick="sendComment()">Envoyer</button>
       </div>
       <div id="commentsList"></div>
@@ -467,6 +481,7 @@
 <script src="js/player.js"></script>
 <script src="js/comments.js"></script>
 <script src="js/moderation.js"></script>
+<script src="js/admin.js"></script>
 <script src="js/profile.js"></script>
 <script src="js/music.js"></script>
 

@@ -1,7 +1,7 @@
 /* FuriousTubes — signalement, suppression & bannissement */
 // ── Report ──
 async function doReport(){
-  if(!currentUser){toast('Connectez-vous pour signaler','er');return;}
+  if(!requireLogin('Connectez-vous pour signaler'))return;
   if(!curId||!confirm('Signaler cette vidéo comme inappropriée ?')) return;
   try{
     const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
@@ -43,4 +43,18 @@ async function doBan(){
     btn.dataset.banned=!isBanned?'1':'0';
     toast(!isBanned?'Utilisateur banni 🚫':'Utilisateur débanni ✅','ok');
   }catch(e){toast('Erreur : '+e.message,'er');}
+}
+
+// ── Admin : masquer / rétablir la vidéo ouverte ──
+async function adminToggleHide(){
+  if(!currentUser?.isAdmin||!curId) return;
+  try{
+    const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
+    const idx=videos.findIndex(v=>v.id===curId);if(idx===-1)return;
+    videos[idx].hidden=!videos[idx].hidden;
+    if(!videos[idx].hidden) videos[idx].reports=[];
+    await setBin(CONFIG.VIDEOS_BIN_ID,videos);
+    toast(videos[idx].hidden?'Vidéo masquée 🙈':'Vidéo rétablie 👁','ok');
+    closePlayer();loadFeed();
+  }catch(e){toast('Erreur','er');}
 }
