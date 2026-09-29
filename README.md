@@ -20,7 +20,8 @@ css/
 js/
   config.js           → clés API, catégories, mots interdits  ← à modifier ici
   utils.js            → fonctions utilitaires (dates, toast…)
-  api.js              → JSONBin (base de données)
+  api.js              → Firestore (base de données)
+  firebase.js         → initialisation Firebase (Auth + Firestore)
   session.js          → session + temps passé sur le site
   header.js / categories.js / auth.js / feed.js / upload.js
   player.js / comments.js / moderation.js / profile.js / music.js
@@ -46,8 +47,14 @@ python3 -m http.server 8000
 # puis ouvrir http://localhost:8000
 ```
 
+## Firebase
+
+Auth (e-mail / mot de passe) et Firestore (vidéos + profils) utilisent le projet Firebase de `js/config.js`.
+Règles Firestore recommandées : voir `firestore.rules` (à coller dans Firestore → Règles → Publier).
+Domaine autorisé requis : Authentication → Paramètres → Domaines autorisés → `<utilisateur>.github.io`.
+
 ## ⚠️ Sécurité
 
-Les clés présentes dans `js/config.js` (clé maître JSONBin, secret Sightengine) sont **publiques** dès que le site est en ligne :
-n'importe qui peut les lire et modifier/supprimer la base de données. Pour un vrai site, passez par un backend
-(ex. Firebase, Supabase, ou une petite fonction serverless) au lieu d'une clé maître côté navigateur.
+La clé web Firebase est publique par conception. En revanche le secret Sightengine de `js/config.js` est visible de tous :
+faites-le régénérer si besoin. Les règles Firestore limitent l'écriture aux comptes connectés, mais tout compte connecté
+peut encore modifier le document partagé : pour une vraie sécurité, il faudrait des documents par vidéo / par utilisateur.
