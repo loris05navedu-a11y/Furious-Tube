@@ -32,6 +32,11 @@
 .errmsg{background:rgba(255,50,50,.08);border:1px solid rgba(255,50,50,.25);color:#ff7070;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:12px;display:none}
 .sucmsg{background:rgba(50,255,100,.06);border:1px solid rgba(50,255,100,.2);color:#5f5;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:12px;display:none}
 
+.google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;padding:10px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:box-shadow .2s}
+.google-btn:hover:not(:disabled){box-shadow:0 2px 12px rgba(0,0,0,.25)}
+.google-btn:disabled{opacity:.6;cursor:not-allowed}
+.auth-or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:12px}
+.auth-or::before,.auth-or::after{content:'';flex:1;height:1px;background:currentColor;opacity:.3}
 .link-btn{display:block;margin:12px auto 0;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline}
 .link-btn:hover{color:var(--fire)}
 

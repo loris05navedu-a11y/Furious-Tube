@@ -1,4 +1,4 @@
-/* FuriousTubes — connexion & inscription (Firebase Auth email / mot de passe) */
+/* FuriousTubes — connexion & inscription (Firebase Auth : e-mail / mot de passe ou Google) */
 
 function switchTab(tab){
   document.getElementById('fLogin').style.display=tab==='login'?'':'none';
@@ -37,11 +37,22 @@ function authErrorMsg(e){
     'auth/invalid-login-credentials':'E-mail ou mot de passe incorrect',
     'auth/too-many-requests':'Trop de tentatives, réessayez dans quelques minutes',
     'auth/network-request-failed':'Problème de connexion internet',
-    'auth/operation-not-allowed':"La connexion e-mail/mot de passe n'est pas activée dans la console Firebase",
+    'auth/operation-not-allowed':"Ce mode de connexion n'est pas activé dans la console Firebase (Authentication → Sign-in method)",
+    'auth/popup-closed-by-user':'Connexion Google annulée',
+    'auth/cancelled-popup-request':'Connexion Google annulée',
+    'auth/account-exists-with-different-credential':'Cet e-mail est déjà utilisé avec un autre mode de connexion',
     'auth/unauthorized-domain':"Ce domaine n'est pas autorisé dans Firebase (Authentication → Paramètres → Domaines autorisés)",
     'auth/user-disabled':'🚫 Ce compte a été désactivé',
   };
   return m[e.code]||('Erreur : '+(e.message||e.code));
+}
+
+// Nom Google → pseudo valide (les pseudos sont affichés dans la page : seuls les caractères autorisés sont gardés)
+function safePseudo(raw){
+  let name=(raw||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9_. -]/g,'').trim().slice(0,20);
+  if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()) name='';
+  if(name.length<3||checkUsername(name)) name='';
+  return name;
 }
 
 // Retrouve (ou crée) la fiche du compte dans Firestore, identifiée par l'uid Firebase
@@ -49,7 +60,7 @@ async function ensureProfile(fbUser,pseudo){
   const users=await getBin(CONFIG.USERS_BIN_ID);
   let user=users.find(u=>u.id===fbUser.uid);
   if(!user){
-    let name=pseudo||fbUser.displayName||(fbUser.email||'user').split('@')[0].slice(0,20);
+    let name=pseudo||safePseudo(fbUser.displayName)||safePseudo((fbUser.email||'').split('@')[0])||'user_'+Math.random().toString(36).slice(2,8);
     if(users.some(u=>u.username?.toLowerCase()===name.toLowerCase())) name=name.slice(0,14)+'_'+Math.random().toString(36).slice(2,6);
     user={id:fbUser.uid,username:name,date:Date.now(),timeOnSite:0,banned:false};
     await setBin(CONFIG.USERS_BIN_ID,[...users.filter(u=>u.id),user]);
@@ -117,6 +128,26 @@ async function doLogin(){
   }catch(e){showAuthErr(authErrorMsg(e));}
   authBusy=false;
   setBtn('loginBtn',false,'Se connecter');
+}
+
+// Connexion Google (même compte que sur WhatQuiz). Fenêtre bloquée → redirection, reprise par watchAuth au retour.
+async function doGoogleLogin(){
+  if(!fbAuth) return showAuthErr('Firebase ne répond pas, rechargez la page');
+  const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  const btn=document.getElementById('googleBtn');btn.disabled=true;
+  try{
+    authBusy=true;
+    const cred=await fbAuth.signInWithPopup(provider);
+    const user=await ensureProfile(cred.user);
+    if(user.banned){await fbAuth.signOut();showAuthErr('🚫 Votre compte a été banni par un administrateur.');}
+    else{finishLogin(user,cred.user);toast(`Bienvenue ${user.username} ! 🔥`,'ok');}
+  }catch(e){
+    if(e.code==='auth/popup-blocked'){authBusy=false;return fbAuth.signInWithRedirect(provider);}
+    showAuthErr(authErrorMsg(e));
+  }
+  authBusy=false;
+  btn.disabled=false;
 }
 
 async function doResetPassword(){
