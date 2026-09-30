@@ -4,11 +4,17 @@ header{position:sticky;top:0;z-index:100;background:rgba(8,8,8,.97);backdrop-fil
 .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;background:linear-gradient(90deg,var(--fire),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0}
 .spacer{flex:1;min-width:0}
 /* Barre de boutons : occupe toute la largeur restante ; les boutons se partagent la ligne et passent dessous si l'écran est étroit */
-.hbar{flex:1 1 320px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+/* Barre de boutons : tous côte à côte sur une seule ligne, de même largeur, sur toute la longueur disponible */
+.hbar{flex:1 1 0;display:flex;align-items:stretch;gap:6px;flex-wrap:nowrap;min-width:0}
 #headerRight{display:contents}
-.hbar>.btn,.hbar>.btn-maker,.hbar>.btn-donate,.hbar>.user-chip{flex:1 1 auto;justify-content:center}
-.hbar>.user-chip span{max-width:120px}
-@media(max-width:700px){.hbar{flex-basis:100%}}
+header .hbar>:not(#headerRight),header #headerRight>*{flex:1 1 0;min-width:0;width:auto;justify-content:center;height:34px;padding:0 8px;margin:0;box-sizing:border-box}
+.hbar .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.btn-profile{background:var(--bg3);border:1px solid var(--border);color:var(--text)}
+.btn-profile:hover{border-color:var(--fire)}
+/* Téléphone : logo au-dessus, la barre occupe toute la largeur de l'écran */
+@media(max-width:700px){.hbar{flex-basis:100%;gap:4px}header .hbar>:not(#headerRight),header #headerRight>*{font-size:11px;padding:0 3px;gap:3px}}
+@media(max-width:900px){header .hbar .long{display:none}}
+@media(max-width:480px){header .hbar .btn-maker svg,header .hbar .av-xs,header .hbar .ico{display:none}}
 .btn{border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px;transition:all .2s;display:flex;align-items:center;gap:4px;padding:7px 12px;flex-shrink:0;white-space:nowrap}
 .btn-primary{background:linear-gradient(135deg,var(--fire),var(--fire2));color:#fff;box-shadow:0 0 16px rgba(255,69,0,.25)}
 .btn-primary:hover{box-shadow:0 0 28px rgba(255,69,0,.45);transform:translateY(-1px)}

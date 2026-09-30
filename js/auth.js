@@ -11,6 +11,7 @@ function switchTab(tab){
 
 // ── Accès réservé aux comptes connectés ──
 function openAuth(tab){
+  if(currentUser) return openMyProfile();   // déjà connecté : le profil (avec la déconnexion) plutôt que la connexion
   document.getElementById('authOv').classList.add('open');
   switchTab(tab||'login');
 }
