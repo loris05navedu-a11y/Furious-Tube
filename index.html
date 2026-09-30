@@ -28,11 +28,11 @@
 
 <header>
   <div class="logo">FuriousTubes</div>
-  <div class="spacer"></div>
+  <div class="hbar">
   <button class="btn-maker" onclick="openFuriousMaker()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-14 9V3z" fill="#000"/><rect x="17" y="3" width="3" height="18" rx="1.5" fill="#000" opacity=".4"/></svg> Furious Maker</button>
-  <a class="btn-donate btn-whatquiz" href="https://loris05navedu-a11y.github.io/WhatQuiz/" title="WhatQuiz : quiz en direct pour la classe (même compte Google)">❓ WhatQuiz</a>
   <a class="btn-donate" href="https://www.paypal.com/donate" target="_blank" rel="noopener">💙 Soutenir</a>
   <div id="headerRight"></div>
+  </div>
 </header>
 
 <!-- MUSIC BAR -->
@@ -211,6 +211,7 @@
         </div>
         <div class="profile-actions">
           <button class="ban-btn" id="banBtn" onclick="doBan()" style="display:none">🚫 Bannir</button>
+          <button class="logout-btn" id="logoutBtn" onclick="closeProfile();doLogout()" style="display:none">↪ Déconnexion</button>
           <button class="x" style="position:static" onclick="closeProfile()">✕</button>
         </div>
       </div>

@@ -17,6 +17,8 @@ async function openProfileById(uid,uname){
   initial.textContent=(uname||'?')[0].toUpperCase();
   img.style.display='none'; img.src='';
   overlay.style.display=isMe?'':'none';
+  const logoutBtn=document.getElementById('logoutBtn');
+  if(logoutBtn) logoutBtn.style.display=isMe?'':'none';
 
   document.getElementById('profName').textContent=uname||'';
   document.getElementById('profSince').textContent='Chargement...';

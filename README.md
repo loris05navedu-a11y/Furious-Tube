@@ -51,7 +51,7 @@ python3 -m http.server 8000
 
 Auth (e-mail / mot de passe **ou Google**) et Firestore (vidéos + profils) utilisent le projet Firebase de `js/config.js`.
 Connexion Google : console Firebase → Authentication → Sign-in method → **Google → Activer** (une seule fois).
-Le même projet sert à la connexion Google de [WhatQuiz](https://loris05navedu-a11y.github.io/WhatQuiz/) (lien dans l'en-tête) :
+Le même projet sert à la connexion Google de [WhatQuiz](https://loris05navedu-a11y.github.io/WhatQuiz/) (la connexion Google fonctionne sur les deux) :
 un compte Google est reconnu sur les deux sites. Le nom Google est converti en pseudo valide (caractères autorisés uniquement).
 Règles Firestore recommandées : voir `firestore.rules` (à coller dans Firestore → Règles → Publier).
 Domaine autorisé requis : Authentication → Paramètres → Domaines autorisés → `<utilisateur>.github.io`.

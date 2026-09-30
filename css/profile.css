@@ -25,5 +25,7 @@
 .pv-title{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pv-likes{font-size:10px;color:var(--muted);margin-top:2px}
 .ban-btn{background:rgba(255,40,40,.1);border:1px solid rgba(255,40,40,.3);color:#ff6060;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.logout-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text);padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.logout-btn:hover{border-color:#ff6060;color:#ff6060}
 .profile-head{display:flex;align-items:flex-start;justify-content:space-between}
 .profile-actions{display:flex;gap:6px;align-items:center}

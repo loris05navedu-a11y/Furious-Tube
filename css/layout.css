@@ -1,9 +1,14 @@
 /* FuriousTubes — header, hero, catégories, grille */
 /* HEADER */
-header{position:sticky;top:0;z-index:100;background:rgba(8,8,8,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 14px;display:flex;align-items:center;gap:6px;height:58px;min-width:0}
+header{position:sticky;top:0;z-index:100;background:rgba(8,8,8,.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;min-height:58px;min-width:0}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;background:linear-gradient(90deg,var(--fire),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0}
 .spacer{flex:1;min-width:0}
-#headerRight{display:flex;align-items:center;gap:6px;flex-shrink:0}
+/* Barre de boutons : occupe toute la largeur restante ; les boutons se partagent la ligne et passent dessous si l'écran est étroit */
+.hbar{flex:1 1 320px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+#headerRight{display:contents}
+.hbar>.btn,.hbar>.btn-maker,.hbar>.btn-donate,.hbar>.user-chip{flex:1 1 auto;justify-content:center}
+.hbar>.user-chip span{max-width:120px}
+@media(max-width:700px){.hbar{flex-basis:100%}}
 .btn{border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-radius:7px;transition:all .2s;display:flex;align-items:center;gap:4px;padding:7px 12px;flex-shrink:0;white-space:nowrap}
 .btn-primary{background:linear-gradient(135deg,var(--fire),var(--fire2));color:#fff;box-shadow:0 0 16px rgba(255,69,0,.25)}
 .btn-primary:hover{box-shadow:0 0 28px rgba(255,69,0,.45);transform:translateY(-1px)}
@@ -43,8 +48,6 @@ main{padding:28px;max-width:1440px;margin:0 auto}
 .btn-maker:hover{box-shadow:0 0 28px rgba(255,106,0,.55);transform:translateY(-1px)}
 .btn-donate{background:linear-gradient(135deg,#003087,#009cde);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;text-decoration:none;flex-shrink:0;box-shadow:0 0 14px rgba(0,156,222,.2);transition:all .2s}
 .btn-donate:hover{box-shadow:0 0 24px rgba(0,156,222,.4)}
-.btn-whatquiz{background:linear-gradient(135deg,#5b3df5,#8b5cf6);box-shadow:0 0 14px rgba(139,92,246,.25)}
-.btn-whatquiz:hover{box-shadow:0 0 24px rgba(139,92,246,.45)}
 .btn-surprise{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;padding:7px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;box-shadow:0 0 16px rgba(168,85,247,.3);transition:all .2s;margin-left:auto}
 .btn-surprise:hover{box-shadow:0 0 28px rgba(168,85,247,.5)}
 .cats-special{display:flex;gap:8px;flex-shrink:0;padding-right:12px;margin-right:4px;border-right:1px solid var(--border)}
