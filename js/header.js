@@ -14,7 +14,7 @@ function renderHeader(){
     else av.textContent=(currentUser.username||'?')[0].toUpperCase();
     el.querySelector('.btn-profile').title=currentUser.username||'Profil';
   } else {
-    el.innerHTML=`<button class="btn btn-primary" onclick="openAuth()"><span class="lbl">Connexion</span></button>`;
+    el.innerHTML=`<button class="btn btn-outline" onclick="openAuth('login')"><span class="lbl">Se connecter</span></button><button class="btn btn-primary" onclick="openAuth('register')"><span class="lbl">S'inscrire</span></button>`;
   }
 }
 

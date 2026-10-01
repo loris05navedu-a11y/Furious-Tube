@@ -29,7 +29,13 @@
 <body>
 
 <header>
-  <div class="logo">FuriousTubes</div>
+  <div class="logo" onclick="goHome()">FuriousTubes</div>
+  <form class="search" onsubmit="event.preventDefault()" role="search">
+    <svg class="search-ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <input type="search" id="searchInput" placeholder="Rechercher une vidéo, un créateur, une catégorie..." autocomplete="off" oninput="onSearch(this.value)" aria-label="Rechercher">
+    <button type="button" class="search-filter" onclick="toggleSort(event)" aria-label="Trier les vidéos" title="Trier"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    <div class="sort-menu" id="sortMenu"></div>
+  </form>
   <div class="hbar">
   <button class="btn-maker" onclick="openFuriousMaker()" title="Furious Maker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-14 9V3z" fill="#000"/><rect x="17" y="3" width="3" height="18" rx="1.5" fill="#000" opacity=".4"/></svg><span class="lbl"><span class="long">Furious </span>Maker</span></button>
   <div id="headerRight"></div>
@@ -54,24 +60,28 @@
 <div id="ytPlayer"></div>
 
 
-<div class="hero">
-  <h1>FURIOUS<br><span class="outline">TUBES</span></h1>
-  <p>Uploadez vos vidéos — tout le monde peut les voir.</p>
+<div class="app">
+  <aside class="side" id="side">
+    <nav class="side-nav" id="sideNav" aria-label="Navigation"></nav>
+    <div class="side-sep"></div>
+    <div class="side-title">Catégories</div>
+    <nav class="side-nav" id="catsBar" aria-label="Catégories"></nav>
+  </aside>
+
+  <main id="content">
+    <section class="hero" id="hero">
+      <div class="hero-txt">
+        <h1>Partage tes vidéos.<br>Découvre. Crée.</h1>
+        <p>FuriousTubes, c'est une communauté de passionnés qui partagent leurs vidéos, découvrent de nouveaux talents et créent avec Furious Maker.</p>
+        <div class="hero-btns">
+          <button class="btn-hero" type="button" onclick="filterCat('🧭 Explorer')"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M7 4l13 8-13 8V4z" fill="currentColor"/></svg>Explorer les vidéos</button>
+          <button class="btn-hero ghost" type="button" onclick="openUpload()"><svg viewBox="0 0 24 24" width="18" height="18"><path d="M7 18a4 4 0 0 1-.5-7.97A6 6 0 0 1 18 9.5 4.3 4.3 0 0 1 17.5 18M12 11v8m0-8l-3 3m3-3l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Importer une vidéo</button>
+        </div>
+      </div>
+    </section>
+    <div id="feed"><div class="empty"><div class="icon">⏳</div><h3>CHARGEMENT</h3></div></div>
+  </main>
 </div>
-
-<!-- CATEGORIES -->
-<div class="cats" id="catsBar"></div>
-
-<main>
-  <div class="bar">
-    <div class="bar-title">VIDÉOS</div>
-    <span class="pill" id="count">—</span>
-    <button class="btn-surprise" onclick="surpriseMe()">🎲 Surprise me !</button>
-  </div>
-  <div class="grid" id="grid">
-    <div class="empty"><div class="icon">⏳</div><h3>CHARGEMENT</h3></div>
-  </div>
-</main>
 
 <!-- AUTH MODAL -->
 <div class="ov" id="authOv">

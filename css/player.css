@@ -1,7 +1,7 @@
 /* FuriousTubes — page de visionnage façon YouTube & commentaires */
 body.watching{overflow:hidden}
 /* derrière la page de visionnage on ne garde que la galaxie */
-body.watching>header,body.watching>.music-bar,body.watching>.hero,body.watching>.cats,body.watching>main{visibility:hidden}
+body.watching>header,body.watching>.music-bar,body.watching>.app{visibility:hidden}
 
 /* Calque plein écran, semi-transparent : la galaxie reste visible derrière */
 .pov{position:fixed;inset:0;z-index:300;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
@@ -208,9 +208,11 @@ body.watching>header,body.watching>.music-bar,body.watching>.hero,body.watching>
 .w-next .yt-card{display:flex;gap:10px;padding:6px;margin:-6px;border-radius:12px}
 .w-next .yt-card:hover{background:rgba(139,92,246,.12)}
 .w-next .yt-thumb{width:168px;flex-shrink:0;border-radius:8px}
-.w-next .yt-info{padding:0;min-width:0;flex:1}
+.w-next .yt-body{padding:0;min-width:0;flex:1}
+.w-next .yt-stats{display:none}
 .w-next .yt-av{display:none}
 .w-next .yt-title{font-size:14px;margin-bottom:4px}
+.w-next .yt-info{display:block}
 .w-next .yt-ch,.w-next .yt-meta{font-size:12px}
 
 /* Responsive Next Videos */
@@ -269,7 +271,8 @@ body.watching>header,body.watching>.music-bar,body.watching>.hero,body.watching>
   .w-next .yt-card{display:block;margin:0;padding:0;border-radius:0}
   .w-next .yt-card:hover{background:none}
   .w-next .yt-thumb{width:100%;border-radius:0}
-  .w-next .yt-info{padding:12px 12px 20px}
+  .w-next .yt-body{padding:12px 12px 20px}
+  .w-next .yt-info{display:flex}
   .w-next .yt-av{display:flex}
   .w-next .yt-title{font-size:15px}
 }

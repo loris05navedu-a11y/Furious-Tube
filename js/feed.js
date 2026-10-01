@@ -1,25 +1,26 @@
-/* FuriousTubes — fil de vidéos & algorithme "Pour toi" */
-// ── Feed ──
+/* FuriousTubes — fil de vidéos, sections façon YouTube & algorithme "Pour toi" */
 let cachedVideos = null;
+let searchQuery = '', sortMode = 'recent';
+const SORTS = [['recent','Plus récentes'],['liked','Plus aimées'],['commented','Plus commentées']];
+
+const nLikes = v => (v.likes||[]).length;
+const nComments = v => (v.comments||[]).length;
+
+function sortVideos(list, mode){
+  const a = [...list];
+  if(mode==='liked') a.sort((x,y)=>nLikes(y)-nLikes(x)||y.date-x.date);
+  else if(mode==='commented') a.sort((x,y)=>nComments(y)-nComments(x)||y.date-x.date);
+  else a.sort((x,y)=>y.date-x.date);
+  return a;
+}
 
 async function loadFeed(useCache=false){
   try{
     if(!useCache || !cachedVideos){
       cachedVideos = await getBin(CONFIG.VIDEOS_BIN_ID);
     }
-    let videos = cachedVideos.filter(v=>v.id&&!v.hidden);
-
-    if(activeCategory==='🏠 Accueil') {
-      // Accueil: vidéos les plus récentes en premier
-      videos = videos.sort((a,b)=>b.date-a.date);
-    } else if(activeCategory==='✨ Pour toi') {
-      videos = getPersonalizedFeed(videos);
-    } else {
-      videos = videos.filter(v=>v.category===activeCategory);
-    }
-
-    renderGrid(videos);
-  }catch(e){renderGrid([]);toast('Erreur de chargement','er');}
+    renderFeed(cachedVideos.filter(v=>v.id&&!v.hidden));
+  }catch(e){renderFeed([]);toast('Erreur de chargement','er');}
 }
 
 // ── Algorithme Pour toi ──
@@ -59,9 +60,12 @@ function getPersonalizedFeed(videos) {
 
 function findVideo(id){return (cachedVideos||[]).find(v=>v.id===id)||null;}
 
-// Carte vidéo façon YouTube (fil d'accueil et colonne « À suivre »)
+const ICO_LIKE='<svg viewBox="0 0 24 24" width="17" height="17"><path d="M7 10v11H3V10zM7 10l4.5-8a2.5 2.5 0 0 1 2.9 2.9L13.6 9H20a2 2 0 0 1 2 2.3l-1.4 8A2 2 0 0 1 18.6 21H7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+const ICO_COMMENT='<svg viewBox="0 0 24 24" width="17" height="17"><path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+const ICO_MORE='<svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="5" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="19" r="1.8" fill="currentColor"/></svg>';
+
+// Carte vidéo (fil, sections et colonne « À suivre »)
 function videoCardHtml(v){
-  const likes=(v.likes||[]).length;
   const id=escHtml(v.id),name=escHtml(v.uploader||'?');
   const av=v.uploaderAvatar
     ?`<img src="${escHtml(v.uploaderAvatar)}" alt="" loading="lazy">`
@@ -75,30 +79,136 @@ function videoCardHtml(v){
         ${v.duration?`<span class="yt-dur">${fmt(v.duration)}</span>`:''}
         <div class="yt-prog"></div>
       </div>
-      <div class="yt-info">
-        <div class="yt-av" data-ch="${escHtml(v.uploaderId||'')}" data-name="${name}">${av}</div>
-        <div class="yt-text">
-          <h3 class="yt-title" title="${escHtml(v.title)}">${escHtml(v.title)}</h3>
-          <div class="yt-ch" data-ch="${escHtml(v.uploaderId||'')}" data-name="${name}">${name}</div>
-          <div class="yt-meta">${fmtCount(likes)} J’aime · ${fmtAgo(v.date)}</div>
+      <div class="yt-body">
+        <h3 class="yt-title" title="${escHtml(v.title)}">${escHtml(v.title)}</h3>
+        <div class="yt-info">
+          <div class="yt-av" data-ch="${escHtml(v.uploaderId||'')}" data-name="${name}">${av}</div>
+          <div class="yt-text">
+            <div class="yt-ch" data-ch="${escHtml(v.uploaderId||'')}" data-name="${name}">${name}</div>
+            <div class="yt-meta">${fmtAgo(v.date)}</div>
+          </div>
+        </div>
+        <div class="yt-stats">
+          <span>${ICO_LIKE}${fmtCount(nLikes(v))}</span>
+          <span>${ICO_COMMENT}${fmtCount(nComments(v))}</span>
+          <button class="yt-more" type="button" aria-label="Copier le lien" title="Copier le lien">${ICO_MORE}</button>
         </div>
       </div>
     </article>`;
 }
 
-function renderGrid(videos){
-  const grid=document.getElementById('grid');
-  document.getElementById('count').textContent=
-    videos.length===0?'0 vidéo':videos.length===1?'1 vidéo':`${videos.length} vidéos`;
-  if(!videos.length){
-    grid.innerHTML=`<div class="empty"><div class="icon">🎬</div><h3>AUCUNE VIDÉO</h3><p>Soyez le premier à enflammer la communauté !</p><button class="btn btn-primary" onclick="openUpload()" style="margin:0 auto">⬆ Importer</button></div>`;
-    return;
+// Nombre de cartes par rangée (téléphone : défilement horizontal)
+let lastPerRow=0;
+function perRow(){
+  if(window.matchMedia('(max-width:640px)').matches) return 8;
+  const w=document.getElementById('feed').clientWidth||1000;
+  return Math.max(2,Math.floor((w+18)/218));
+}
+
+function rowSection(icon,title,list,view,n){
+  if(!list.length) return '';
+  return `<section class="sec">
+    <div class="sec-head"><span class="sec-ico">${icon}</span><h2>${title}</h2>
+      <button class="sec-more" type="button" onclick="filterCat('${view}')">Voir tout <span aria-hidden="true">→</span></button></div>
+    <div class="row-grid" style="--n:${n}">${list.map(videoCardHtml).join('')}</div>
+  </section>`;
+}
+
+function gridSection(icon,title,list){
+  const c=list.length;
+  return `<section class="sec">
+    <div class="sec-head"><span class="sec-ico">${icon}</span><h2>${title}</h2>
+      <span class="pill">${c===0?'0 vidéo':c===1?'1 vidéo':c+' vidéos'}</span></div>
+    <div class="full-grid">${c?list.map(videoCardHtml).join(''):emptyHtml(emptyMsg())}</div>
+  </section>`;
+}
+
+function emptyMsg(){
+  if(searchQuery.trim()) return 'Aucun résultat. Essayez un autre mot-clé.';
+  if(activeCategory==='📁 Mes vidéos') return 'Vous n’avez pas encore publié de vidéo.';
+  if(activeCategory==='❤️ Favoris') return 'Aucune vidéo aimée pour le moment.';
+  return 'Aucune vidéo dans cette section.';
+}
+
+function emptyHtml(msg){
+  return `<div class="empty"><div class="icon">🎬</div><h3>AUCUNE VIDÉO</h3><p>${escHtml(msg||'Soyez le premier à enflammer la communauté !')}</p><button class="btn btn-primary" onclick="openUpload()" style="margin:0 auto">⬆ Importer</button></div>`;
+}
+
+function setHeroImage(all){
+  const hero=document.getElementById('hero');
+  const best=sortVideos(all,'liked').find(v=>v.thumb);
+  if(best) hero.style.setProperty('--hero-img',`url(${JSON.stringify(best.thumb)})`);
+  else hero.style.removeProperty('--hero-img');
+}
+
+function homeSections(all){
+  const n=perRow();lastPerRow=n;
+  const shown=new Set();
+  const take=list=>{const out=list.filter(v=>!shown.has(v.id)).slice(0,n);out.forEach(v=>shown.add(v.id));return out;};
+  const trending=take(sortVideos(all,'liked'));
+  const reco=take(getPersonalizedFeed(all));
+  const fresh=take(sortVideos(all,'recent'));
+  return rowSection('🔥','Tendances',trending,'🔥 Tendances',n)
+    +rowSection('⭐','Vidéos recommandées',reco,'✨ Pour toi',n)
+    +rowSection('🆕','Nouveautés',fresh,'🧭 Explorer',n);
+}
+
+function renderFeed(all){
+  const feed=document.getElementById('feed'),hero=document.getElementById('hero');
+  const q=searchQuery.trim().toLowerCase();
+  const home=!q&&activeCategory==='🏠 Accueil';
+  hero.hidden=!home;
+  if(home) setHeroImage(all);
+  if(!all.length){feed.innerHTML=emptyHtml();return;}
+  if(home){feed.innerHTML=homeSections(all);return;}
+
+  let list,icon,title;
+  const cat=activeCategory;
+  if(q){
+    list=sortVideos(all.filter(v=>[v.title,v.uploader,v.category].some(s=>(s||'').toLowerCase().includes(q))),sortMode);
+    icon='🔍';title='Résultats pour « '+escHtml(searchQuery.trim())+' »';
+  }else{
+    const [ic,...rest]=cat.split(' ');
+    icon=ic;title=escHtml(rest.join(' '));
+    if(cat==='✨ Pour toi') list=getPersonalizedFeed(all);
+    else if(cat==='🔥 Tendances') list=sortVideos(all,'liked');
+    else if(cat==='📁 Mes vidéos') list=sortVideos(all.filter(v=>currentUser&&v.uploaderId===currentUser.id),sortMode);
+    else if(cat==='❤️ Favoris') list=sortVideos(all.filter(v=>currentUser&&(v.likes||[]).includes(currentUser.id)),sortMode);
+    else if(cat==='🧭 Explorer') list=sortVideos(all,sortMode);
+    else list=sortVideos(all.filter(v=>v.category===cat),sortMode);
   }
-  grid.innerHTML=videos.map(videoCardHtml).join('');
+  feed.innerHTML=gridSection(icon,title,list);
+}
+
+// ── Recherche & tri ──
+let searchTimer;
+function onSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchQuery=v;loadFeed(true);},150);}
+function renderSortMenu(){
+  document.getElementById('sortMenu').innerHTML=SORTS.map(([k,l])=>`<button type="button" class="${k===sortMode?'on':''}" onclick="setSort('${k}')">${l}</button>`).join('');
+}
+function toggleSort(e){e.stopPropagation();renderSortMenu();document.getElementById('sortMenu').classList.toggle('open');}
+function setSort(k){sortMode=k;document.getElementById('sortMenu').classList.remove('open');loadFeed(true);}
+document.addEventListener('click',()=>document.getElementById('sortMenu').classList.remove('open'));
+
+let resizeTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>{
+    if(cachedVideos&&!searchQuery.trim()&&activeCategory==='🏠 Accueil'&&perRow()!==lastPerRow) loadFeed(true);
+  },200);
+});
+
+function copyVideoLink(id){
+  const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('v',id);
+  const url=u.toString();
+  if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Lien copié ! 🔗','ok')).catch(()=>prompt('Copiez le lien :',url));
+  else prompt('Copiez le lien :',url);
 }
 
 // Clic sur une carte (ouvre la vidéo) ou sur la chaîne (ouvre le profil)
 document.addEventListener('click',e=>{
+  const more=e.target.closest('.yt-card .yt-more');
+  if(more){e.stopPropagation();copyVideoLink(more.closest('.yt-card').dataset.id);return;}
   const ch=e.target.closest('.yt-card [data-ch]');
   if(ch&&ch.dataset.ch){e.stopPropagation();openProfileById(ch.dataset.ch,ch.dataset.name);return;}
   const card=e.target.closest('.yt-card');

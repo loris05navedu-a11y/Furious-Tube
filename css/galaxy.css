@@ -21,9 +21,6 @@ body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
 
 /* titres : dégradé cosmique + lueur */
 .logo{background:linear-gradient(90deg,#a78bfa,#22d3ee);-webkit-background-clip:text;background-clip:text}
-.hero h1{text-shadow:0 0 40px rgba(139,92,246,.45)}
-.hero h1 .outline{-webkit-text-stroke:1px rgba(167,139,250,.75);text-shadow:none;filter:drop-shadow(0 0 14px rgba(139,92,246,.6))}
-.hero::after{background:radial-gradient(ellipse at 15% 60%,rgba(139,92,246,.22),transparent 55%)}
 .btn-primary,.sub{background:linear-gradient(135deg,#7c3aed,#c026d3);box-shadow:0 0 18px rgba(139,92,246,.45)}
 .btn-primary:hover,.sub:hover:not(:disabled){box-shadow:0 0 32px rgba(167,139,250,.7)}
 .pb{background:linear-gradient(90deg,#8b5cf6,#22d3ee)}
