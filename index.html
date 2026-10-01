@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="css/cards.css">
 <link rel="stylesheet" href="css/modals.css">
 <link rel="stylesheet" href="css/player.css">
+<link rel="stylesheet" href="css/videoplayer.css">
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/toast.css">
 <link rel="stylesheet" href="css/maker.css">
@@ -163,7 +164,9 @@
       </div>
       <button class="x" style="position:static" onclick="closePlayer()">✕</button>
     </div>
-    <video id="pvid" controls></video>
+    <div class="vp-stage" id="vpStage">
+      <div class="vp" id="vp" tabindex="-1"><video id="pvid" playsinline preload="metadata"></video></div>
+    </div>
     <div class="pf">
       <div class="pf-left">
         <div class="pup" id="pupWrap" onclick="openProfileById(curUploaderId, curUploaderName)">
@@ -482,6 +485,7 @@
 <script src="js/auth.js"></script>
 <script src="js/feed.js"></script>
 <script src="js/upload.js"></script>
+<script src="js/videoplayer.js"></script>
 <script src="js/player.js"></script>
 <script src="js/comments.js"></script>
 <script src="js/moderation.js"></script>

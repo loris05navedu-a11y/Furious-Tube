@@ -10,7 +10,6 @@ function openPlayer(v){
   const av=document.getElementById('pav');
   av.innerHTML=v.uploaderAvatar?`<img src="${v.uploaderAvatar}">`:(v.uploader||'?')[0].toUpperCase();
   document.getElementById('pupname').textContent=v.uploader;
-  document.getElementById('pvid').src=v.url;
   const isAdmin=!!(currentUser&&currentUser.isAdmin);
   document.getElementById('delbtn').style.display=(currentUser&&(currentUser.id===v.uploaderId||isAdmin))?'':'none';
   const hideBtn=document.getElementById('hidebtn');
@@ -30,13 +29,12 @@ function openPlayer(v){
 
   document.getElementById('pov').classList.add('open');
   pauseMusic();
-  document.getElementById('pvid').play().catch(()=>{});
+  FTPlayer.load(v.url);
 }
 
 function closePlayer(){
   document.getElementById('pov').classList.remove('open');
-  document.getElementById('pvid').pause();
-  document.getElementById('pvid').src='';
+  FTPlayer.unload();
   curId=null;curUploaderId=null;curUploaderName=null;
   resumeMusic();
 }
