@@ -1,4 +1,4 @@
 /* FuriousTubes — variables, reset & base */
-:root{--fire:#ff4500;--fire2:#ff6a00;--gold:#ffb300;--bg:#080808;--bg2:#101010;--bg3:#181818;--card:#111;--border:#222;--text:#f2f2f2;--muted:#666}
+:root{--fire:#7c3aed;--fire2:#8b5cf6;--gold:#22d3ee;--bg:#05030f;--bg2:#0c0820;--bg3:#150f33;--card:#0d0926;--border:#2a2058;--text:#f1eeff;--muted:#8b84b8}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}

@@ -12,7 +12,7 @@
 .tab{flex:1;padding:7px;border:none;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-radius:7px;transition:all .2s}
 .tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
 .drop{border:2px dashed var(--border);border-radius:10px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg3);margin-bottom:13px}
-.drop:hover,.drop.on{border-color:var(--fire);background:rgba(255,69,0,.04)}
+.drop:hover,.drop.on{border-color:var(--fire);background:rgba(124,58,237,.04)}
 .drop .di{font-size:28px;margin-bottom:7px}
 .drop p{color:var(--muted);font-size:13px}
 .drop strong{color:var(--fire)}
@@ -26,8 +26,8 @@
 .pw{background:var(--bg3);border-radius:99px;height:5px;margin:10px 0;overflow:hidden;display:none}
 .pb{height:100%;background:linear-gradient(90deg,var(--fire),var(--gold));border-radius:99px;transition:width .15s;width:0%}
 .ptext{font-size:11px;color:var(--muted);text-align:center;margin-bottom:8px;min-height:16px}
-.sub{width:100%;background:linear-gradient(135deg,var(--fire),var(--fire2));color:#fff;border:none;padding:11px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 18px rgba(255,69,0,.25);display:flex;align-items:center;justify-content:center;gap:8px}
-.sub:hover:not(:disabled){box-shadow:0 4px 28px rgba(255,69,0,.45);transform:translateY(-1px)}
+.sub{width:100%;background:linear-gradient(135deg,var(--fire),var(--fire2));color:#fff;border:none;padding:11px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 18px rgba(124,58,237,.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.sub:hover:not(:disabled){box-shadow:0 4px 28px rgba(124,58,237,.45);transform:translateY(-1px)}
 .sub:disabled{opacity:.45;cursor:not-allowed;transform:none}
 .errmsg{background:rgba(255,50,50,.08);border:1px solid rgba(255,50,50,.25);color:#ff7070;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:12px;display:none}
 .sucmsg{background:rgba(50,255,100,.06);border:1px solid rgba(50,255,100,.2);color:#5f5;padding:8px 12px;border-radius:7px;font-size:12px;margin-bottom:12px;display:none}
