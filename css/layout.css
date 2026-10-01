@@ -36,18 +36,19 @@ header .hbar>:not(#headerRight),header #headerRight>*{flex:1 1 0;min-width:0;wid
 /* CATEGORIES */
 .cats{display:flex;gap:8px;overflow-x:auto;padding:0 28px 16px;scrollbar-width:none}
 .cats::-webkit-scrollbar{display:none}
-.cat-btn{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 16px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:'DM Sans',sans-serif}
-.cat-btn:hover,.cat-btn.active{background:rgba(124,58,237,.1);border-color:var(--fire);color:var(--fire)}
+.cat-btn{background:rgba(139,92,246,.14);border:1px solid transparent;color:var(--text);height:32px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;font-family:'DM Sans',sans-serif}
+.cat-btn:hover{background:rgba(139,92,246,.28)}
+.cat-btn.active,.cat-btn.active:hover{background:#f1eeff;color:#05030f;border-color:transparent}
 .special-cat{background:rgba(124,58,237,.08);border-color:rgba(124,58,237,.4);color:var(--text);font-weight:600}
-.special-cat:hover{background:rgba(124,58,237,.15);border-color:var(--fire);color:var(--fire)}
+.special-cat:hover{background:rgba(139,92,246,.28)}
 
 main{padding:28px;max-width:1440px;margin:0 auto}
 .bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .bar-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted)}
 .pill{background:var(--bg3);border:1px solid var(--border);padding:2px 10px;border-radius:99px;font-size:11px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:36px 16px}
 
-@media(max-width:600px){main{padding:16px}.hero{padding:28px 16px 24px}.cats{padding:0 16px 14px}}
+@media(max-width:600px){main{padding:16px 0}.bar{padding:0 16px}.grid{grid-template-columns:1fr;gap:6px}.hero{padding:28px 16px 24px}.cats{padding:0 16px 14px}}
 
 /* BOUTONS SPÉCIAUX (anciens styles inline) */
 .btn-maker{background:linear-gradient(135deg,#8b5cf6,#c084fc);color:#000;border:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;flex-shrink:0;box-shadow:0 0 16px rgba(139,92,246,.3);transition:all .2s;letter-spacing:.3px}

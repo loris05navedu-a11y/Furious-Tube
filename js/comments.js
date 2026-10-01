@@ -2,7 +2,12 @@
 // ── Comments ──
 function renderComments(comments){
   const list=document.getElementById('commentsList');
-  document.getElementById('commentCount').textContent=comments.length;
+  document.getElementById('commentCount').textContent=fmtCount(comments.length);
+  const prev=document.getElementById('cmPreview');
+  const last=comments[comments.length-1];
+  prev.innerHTML=last
+    ?`${getAvatarHtml(last.authorAvatar,last.author,'av-c')}<span class="cm-preview-text">${escHtml(last.text)}</span>`
+    :'<span class="cm-preview-text cm-empty">Ajouter un commentaire...</span>';
   if(!comments.length){list.innerHTML='<div class="no-comments">Aucun commentaire — soyez le premier ! 💬</div>';return;}
   list.innerHTML=[...comments].reverse().map(c=>`
     <div class="comment">

@@ -1,15 +1,24 @@
 /* FuriousTubes — lecteur, likes & abonnements */
-// ── Player ──
+// ── Page de visionnage ──
 let curId=null,curUploaderId=null,curUploaderName=null;
 
+function urlVideoId(){return new URLSearchParams(location.search).get('v');}
+
 function openPlayer(v){
+  const pov=document.getElementById('pov');
+  const wasOpen=pov.classList.contains('open');
   curId=v.id;curUploaderId=v.uploaderId;curUploaderName=v.uploader;
   document.getElementById('ptitle').textContent=v.title;
+  document.title=v.title+' — FuriousTubes';
   document.getElementById('pcat').textContent=v.category||'';
-  document.getElementById('pdate').textContent=fmtDate(v.date);
+  document.getElementById('pcat').style.display=v.category?'':'none';
+  document.getElementById('pstats').textContent=fmtCount((v.likes||[]).length)+' J’aime · '+fmtAgo(v.date);
+  document.getElementById('pdate').textContent=v.date?'· '+fmtDate(v.date):'';
   const av=document.getElementById('pav');
-  av.innerHTML=v.uploaderAvatar?`<img src="${v.uploaderAvatar}">`:(v.uploader||'?')[0].toUpperCase();
+  if(v.uploaderAvatar){av.innerHTML='<img alt="">';av.querySelector('img').src=v.uploaderAvatar;}
+  else av.textContent=(v.uploader||'?')[0].toUpperCase();
   document.getElementById('pupname').textContent=v.uploader;
+  document.getElementById('psubs').textContent='';
   const isAdmin=!!(currentUser&&currentUser.isAdmin);
   document.getElementById('delbtn').style.display=(currentUser&&(currentUser.id===v.uploaderId||isAdmin))?'':'none';
   const hideBtn=document.getElementById('hidebtn');
@@ -19,26 +28,85 @@ function openPlayer(v){
   document.getElementById('repbtn').title=isAdmin?`${nRep} signalement(s)`:'Signaler';
   document.getElementById('subBtn2').style.display=(currentUser&&currentUser.id===v.uploaderId)?'none':'';
   updateLikeUI(v);
+  document.getElementById('commentsSec').classList.remove('open');
   renderComments(v.comments||[]);
+  renderUpNext(v);
 
-  // Load sub state
   getBin(CONFIG.USERS_BIN_ID).then(users=>{
-    const uploader=users.find(u=>u.id===v.uploaderId);
-    updateSubUI(uploader);
+    if(curId!==v.id)return;
+    updateSubUI(users.find(u=>u.id===v.uploaderId));
   }).catch(()=>{});
 
-  document.getElementById('pov').classList.add('open');
-  pauseMusic();
+  if(urlVideoId()!==v.id){
+    const u=new URL(location.href);u.searchParams.set('v',v.id);
+    history.pushState({ftv:v.id},'',u);
+  }
+  pov.classList.add('open');
+  pov.setAttribute('aria-hidden','false');
+  document.body.classList.add('watching');
+  pov.scrollTop=0;
+  if(!wasOpen)pauseMusic();
   FTPlayer.load(v.url);
 }
 
-function closePlayer(){
-  document.getElementById('pov').classList.remove('open');
+function hidePlayer(){
+  const pov=document.getElementById('pov');
+  if(!pov.classList.contains('open'))return;
+  pov.classList.remove('open');
+  pov.setAttribute('aria-hidden','true');
+  document.body.classList.remove('watching');
+  document.title='FuriousTubes';
   FTPlayer.unload();
   curId=null;curUploaderId=null;curUploaderName=null;
   resumeMusic();
 }
-document.getElementById('pov').addEventListener('click',e=>{if(e.target.id==='pov')closePlayer();});
+
+function closePlayer(){
+  hidePlayer();
+  if(urlVideoId()){const u=new URL(location.href);u.searchParams.delete('v');history.pushState(null,'',u);}
+}
+
+// Bouton « retour » du navigateur / du téléphone
+window.addEventListener('popstate',()=>{
+  const id=urlVideoId();
+  if(!id){hidePlayer();return;}
+  if(id!==curId){const v=findVideo(id);if(v&&!v.hidden)openPlayer(v);else hidePlayer();}
+});
+
+// Lien partagé : ?v=<id>
+function openFromUrl(){
+  const id=urlVideoId();if(!id)return;
+  const v=findVideo(id);
+  if(v&&(!v.hidden||(currentUser&&currentUser.isAdmin))){
+    history.replaceState({ftv:id},'',location.href);
+    openPlayer(v);
+  }else toast('Vidéo introuvable','er');
+}
+
+// « À suivre » : même catégorie et même créateur d'abord, puis les plus récentes
+function renderUpNext(v){
+  const list=(cachedVideos||[]).filter(x=>x.id&&!x.hidden&&x.id!==v.id).map(x=>{
+    let s=0;
+    if(x.category&&x.category===v.category)s+=3;
+    if(x.uploaderId===v.uploaderId)s+=2;
+    s+=Math.max(0,1-(Date.now()-(x.date||0))/(30*864e5));
+    return{x,s};
+  }).sort((a,b)=>b.s-a.s).slice(0,20).map(o=>o.x);
+  document.getElementById('upNext').innerHTML=list.length
+    ?list.map(videoCardHtml).join('')
+    :'<div class="no-comments">Aucune autre vidéo pour le moment.</div>';
+}
+
+function shareVideo(){
+  if(!curId)return;
+  const u=new URL(location.href);u.search='';u.hash='';u.searchParams.set('v',curId);
+  const url=u.toString(),title=document.getElementById('ptitle').textContent;
+  if(navigator.share){navigator.share({title,url}).catch(()=>{});return;}
+  if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast('Lien copié ! 🔗','ok')).catch(()=>prompt('Copiez le lien :',url));
+  else prompt('Copiez le lien :',url);
+}
+
+function toggleComments(){document.getElementById('commentsSec').classList.toggle('open');}
 
 // ── Instant Like/Dislike ──
 function doLike(){
@@ -110,7 +178,9 @@ function doSubscribe(){
   const btn=document.getElementById('subBtn2');
   const wasSubbed=btn.classList.contains('subscribed');
   btn.classList.toggle('subscribed',!wasSubbed);
-  btn.textContent=!wasSubbed?'✓ Abonné':'➕ S\'abonner';
+  btn.textContent=!wasSubbed?'Abonné':'S\'abonner';
+  const n=parseInt(document.getElementById('psubs').dataset.n||'0',10);
+  setSubCount(Math.max(0,n+(wasSubbed?-1:1)));
   toast(!wasSubbed?'Vous êtes abonné ! 🔥':'Désabonné','ok');
 
   getBin(CONFIG.USERS_BIN_ID).then(users=>{
@@ -122,9 +192,14 @@ function doSubscribe(){
   }).catch(()=>{});
 }
 
+function setSubCount(n){
+  document.getElementById('psubs').textContent=`${fmtCount(n)} abonné${n>1?'s':''}`;
+  document.getElementById('psubs').dataset.n=n;
+}
 function updateSubUI(uploader){
   const subs=uploader?.subscribers||[];
   const isSub=currentUser&&subs.includes(currentUser.id);
   const btn=document.getElementById('subBtn2');
-  if(btn){btn.classList.toggle('subscribed',isSub);btn.textContent=isSub?'✓ Abonné':'➕ S\'abonner';}
+  if(btn){btn.classList.toggle('subscribed',isSub);btn.textContent=isSub?'Abonné':'S\'abonner';}
+  setSubCount(subs.length);
 }

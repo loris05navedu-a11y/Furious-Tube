@@ -151,47 +151,63 @@
   </div>
 </div>
 
-<!-- PLAYER -->
-<div class="pov" id="pov">
-  <div class="pbox">
-    <div class="ph">
-      <div class="ph-left">
-        <h3 id="ptitle"></h3>
-        <div class="ph-meta">
+<!-- PAGE DE VISIONNAGE (façon YouTube) -->
+<div class="pov" id="pov" aria-hidden="true">
+  <div class="w-top">
+    <button class="w-back" type="button" onclick="closePlayer()" aria-label="Retour"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="logo w-logo" onclick="closePlayer()">FuriousTubes</div>
+  </div>
+  <div class="w-layout">
+    <div class="w-primary">
+      <div class="vp-stage" id="vpStage">
+        <div class="vp" id="vp" tabindex="-1"><video id="pvid" playsinline preload="metadata"></video></div>
+      </div>
+      <div class="w-info">
+        <h1 class="w-title" id="ptitle"></h1>
+        <div class="w-row">
+          <div class="w-channel">
+            <div class="pup" id="pupWrap" onclick="openProfileById(curUploaderId, curUploaderName)">
+              <div class="av-md" id="pav"></div>
+              <div class="w-chtext">
+                <div class="w-chname" id="pupname"></div>
+                <div class="w-subs" id="psubs"></div>
+              </div>
+            </div>
+            <button class="sub-btn" id="subBtn2" onclick="doSubscribe()">S'abonner</button>
+          </div>
+          <div class="w-actions">
+            <div class="w-pill-group">
+              <button class="w-pill like-btn" id="likeBtn" onclick="doLike()" aria-label="J'aime"><svg viewBox="0 0 24 24"><path d="M7 10v11H3V10zM7 10l4.5-8a2.5 2.5 0 0 1 2.9 2.9L13.6 9H20a2 2 0 0 1 2 2.3l-1.4 8A2 2 0 0 1 18.6 21H7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span id="likeCount">0</span></button>
+              <button class="w-pill like-btn" id="dislikeBtn" onclick="doDislike()" aria-label="Je n'aime pas"><svg viewBox="0 0 24 24"><path d="M17 14V3h4v11zM17 14l-4.5 8a2.5 2.5 0 0 1-2.9-2.9l.8-4.1H4a2 2 0 0 1-2-2.3l1.4-8A2 2 0 0 1 5.4 3H17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span id="dislikeCount">0</span></button>
+            </div>
+            <button class="w-pill" type="button" onclick="shareVideo()"><svg viewBox="0 0 24 24"><path d="M14 4l7 7-7 7v-4c-6 0-9 2-11 6 1-6 4-11 11-12z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Partager</span></button>
+            <button class="w-pill warn-btn" id="repbtn" onclick="doReport()"><span>⚠ Signaler</span></button>
+            <button class="w-pill warn-btn" id="hidebtn" onclick="adminToggleHide()" style="display:none">🙈 Masquer</button>
+            <button class="w-pill delbtn" id="delbtn" onclick="doDelete()" style="display:none">🗑 Supprimer</button>
+          </div>
+        </div>
+        <div class="w-desc">
+          <div class="w-desc-stats"><span id="pstats"></span> <span id="pdate"></span></div>
           <span class="ph-cat" id="pcat"></span>
-          <span id="pdate"></span>
         </div>
-      </div>
-      <button class="x" style="position:static" onclick="closePlayer()">✕</button>
-    </div>
-    <div class="vp-stage" id="vpStage">
-      <div class="vp" id="vp" tabindex="-1"><video id="pvid" playsinline preload="metadata"></video></div>
-    </div>
-    <div class="pf">
-      <div class="pf-left">
-        <div class="pup" id="pupWrap" onclick="openProfileById(curUploaderId, curUploaderName)">
-          <div class="av-md" id="pav"></div>
-          <div id="pupname" style="font-size:12px;color:var(--text);font-weight:500"></div>
-        </div>
-        <button class="sub-btn" id="subBtn2" onclick="doSubscribe()">➕ S'abonner</button>
-      </div>
-      <div class="pf-right">
-        <button class="like-btn" id="likeBtn" onclick="doLike()">👍 <span id="likeCount">0</span></button>
-        <button class="like-btn" id="dislikeBtn" onclick="doDislike()">👎 <span id="dislikeCount">0</span></button>
-        <button class="warn-btn" id="repbtn" onclick="doReport()">⚠</button>
-        <button class="warn-btn" id="hidebtn" onclick="adminToggleHide()" style="display:none">🙈 Masquer</button>
-        <button class="delbtn" id="delbtn" onclick="doDelete()" style="display:none">🗑</button>
+        <!-- COMMENTS -->
+        <section class="comments-section" id="commentsSec">
+          <button class="comments-title" type="button" onclick="toggleComments()">Commentaires <span class="cm-count" id="commentCount">0</span><span class="cm-chev">⌄</span></button>
+          <div class="cm-preview" id="cmPreview" onclick="toggleComments()"></div>
+          <div class="cm-body">
+            <div class="comment-input-wrap" id="commentInputWrap">
+              <input type="text" id="commentInput" placeholder="Ajouter un commentaire..." onfocus="if(!currentUser){this.blur();requireLogin('Connectez-vous pour commenter');}" maxlength="300" onkeydown="if(event.key==='Enter') sendComment()">
+              <button class="comment-send" onclick="sendComment()">Envoyer</button>
+            </div>
+            <div id="commentsList"></div>
+          </div>
+        </section>
       </div>
     </div>
-    <!-- COMMENTS -->
-    <div class="comments-section">
-      <div class="comments-title">Commentaires (<span id="commentCount">0</span>)</div>
-      <div class="comment-input-wrap" id="commentInputWrap">
-        <input type="text" id="commentInput" placeholder="Ajouter un commentaire..." onfocus="if(!currentUser){this.blur();requireLogin('Connectez-vous pour commenter');}" maxlength="300" onkeydown="if(event.key==='Enter') sendComment()">
-        <button class="comment-send" onclick="sendComment()">Envoyer</button>
-      </div>
-      <div id="commentsList"></div>
-    </div>
+    <aside class="w-secondary">
+      <h2 class="w-next-title">À suivre</h2>
+      <div class="w-next" id="upNext"></div>
+    </aside>
   </div>
 </div>
 

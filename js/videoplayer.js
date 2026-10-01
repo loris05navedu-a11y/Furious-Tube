@@ -64,7 +64,8 @@ const FTPlayer=(()=>{
   function fit(){
     if(!vp||fsElement()===vp)return;
     const W=stage.clientWidth;if(!W)return;
-    const H=Math.max(180,Math.min(window.innerHeight*0.7,window.innerHeight-340,720));
+    const phone=window.innerWidth<=640;
+    const H=Math.max(200,Math.min(window.innerHeight*(phone?0.6:0.74),phone?9999:window.innerHeight-170,880));
     const w=Math.min(W,H*ratio);
     vp.style.width=Math.round(w)+'px';
     vp.style.height=Math.round(w/ratio)+'px';
