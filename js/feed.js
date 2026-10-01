@@ -134,11 +134,31 @@ function emptyHtml(msg){
   return `<div class="empty"><div class="icon">🎬</div><h3>AUCUNE VIDÉO</h3><p>${escHtml(msg||'Soyez le premier à enflammer la communauté !')}</p><button class="btn btn-primary" onclick="openUpload()" style="margin:0 auto">⬆ Importer</button></div>`;
 }
 
-function setHeroImage(all){
+const SEC_ICO={
+  fire:'<svg viewBox="0 0 24 24" width="24" height="24" fill="#ff6a3d"><path d="M12 2c1 4 6 6 6 11.5A6 6 0 0 1 6 14c0-2.5 1.2-4 2.5-5.2.2 2 1 3 2.2 3.2C10.5 8.5 10 5 12 2z"/></svg>',
+  star:'<svg viewBox="0 0 24 24" width="24" height="24" fill="#fbbf24"><path d="M12 2.5l2.9 6 6.6.9-4.800 4.6 1.2 6.5L12 17.3 6.1 20.5l1.2-6.5L2.5 9.400l6.6-.9z"/></svg>',
+  fresh:'<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+};
+
+let heroTimer=null,heroImgs=[],heroIdx=0;
+function showHero(i){
   const hero=document.getElementById('hero');
-  const best=sortVideos(all,'liked').find(v=>v.thumb);
-  if(best) hero.style.setProperty('--hero-img',`url(${JSON.stringify(best.thumb)})`);
+  heroIdx=i;
+  if(heroImgs[i]) hero.style.setProperty('--hero-img',`url(${JSON.stringify(heroImgs[i])})`);
   else hero.style.removeProperty('--hero-img');
+  hero.querySelectorAll('.hero-dots button').forEach((b,j)=>b.classList.toggle('on',j===i));
+}
+function setHeroImage(all){
+  clearInterval(heroTimer);
+  heroImgs=sortVideos(all,'liked').filter(v=>v.thumb).slice(0,3).map(v=>v.thumb);
+  const dots=document.querySelector('#hero .hero-dots');
+  dots.innerHTML=heroImgs.length>1?heroImgs.map((_,i)=>`<button type="button" aria-label="Image ${i+1}" onclick="showHero(${i});setHeroImage_restart()"></button>`).join(''):'';
+  showHero(0);
+  if(heroImgs.length>1) heroTimer=setInterval(()=>showHero((heroIdx+1)%heroImgs.length),6000);
+}
+function setHeroImage_restart(){
+  clearInterval(heroTimer);
+  heroTimer=setInterval(()=>showHero((heroIdx+1)%heroImgs.length),6000);
 }
 
 function homeSections(all){
@@ -148,9 +168,9 @@ function homeSections(all){
   const trending=take(sortVideos(all,'liked'));
   const reco=take(getPersonalizedFeed(all));
   const fresh=take(sortVideos(all,'recent'));
-  return rowSection('🔥','Tendances',trending,'🔥 Tendances',n)
-    +rowSection('⭐','Vidéos recommandées',reco,'✨ Pour toi',n)
-    +rowSection('🆕','Nouveautés',fresh,'🧭 Explorer',n);
+  return rowSection(SEC_ICO.fire,'Tendances',trending,'🔥 Tendances',n)
+    +rowSection(SEC_ICO.star,'Vidéos recommandées',reco,'✨ Pour toi',n)
+    +rowSection(SEC_ICO.fresh,'Nouveautés',fresh,'🧭 Explorer',n);
 }
 
 function renderFeed(all){
@@ -158,7 +178,7 @@ function renderFeed(all){
   const q=searchQuery.trim().toLowerCase();
   const home=!q&&activeCategory==='🏠 Accueil';
   hero.hidden=!home;
-  if(home) setHeroImage(all);
+  if(home) setHeroImage(all); else clearInterval(heroTimer);
   if(!all.length){feed.innerHTML=emptyHtml();return;}
   if(home){feed.innerHTML=homeSections(all);return;}
 
@@ -166,10 +186,10 @@ function renderFeed(all){
   const cat=activeCategory;
   if(q){
     list=sortVideos(all.filter(v=>[v.title,v.uploader,v.category].some(s=>(s||'').toLowerCase().includes(q))),sortMode);
-    icon='🔍';title='Résultats pour « '+escHtml(searchQuery.trim())+' »';
+    icon=ico('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>');title='Résultats pour « '+escHtml(searchQuery.trim())+' »';
   }else{
     const [ic,...rest]=cat.split(' ');
-    icon=ic;title=escHtml(rest.join(' '));
+    icon=ICONS[cat]||ic;title=escHtml(rest.join(' '));
     if(cat==='✨ Pour toi') list=getPersonalizedFeed(all);
     else if(cat==='🔥 Tendances') list=sortVideos(all,'liked');
     else if(cat==='📁 Mes vidéos') list=sortVideos(all.filter(v=>currentUser&&v.uploaderId===currentUser.id),sortMode);

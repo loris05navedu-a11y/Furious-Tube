@@ -21,12 +21,13 @@ body::before{content:'';position:fixed;inset:0;z-index:-2;pointer-events:none;
 
 /* titres : dégradé cosmique + lueur */
 .logo{background:linear-gradient(90deg,#a78bfa,#22d3ee);-webkit-background-clip:text;background-clip:text}
-.btn-primary,.sub{background:linear-gradient(135deg,#7c3aed,#c026d3);box-shadow:0 0 18px rgba(139,92,246,.45)}
-.btn-primary:hover,.sub:hover:not(:disabled){box-shadow:0 0 32px rgba(167,139,250,.7)}
+.btn-primary,.sub{background:linear-gradient(135deg,#5b6cff,#7c4dff);box-shadow:0 0 18px rgba(99,102,241,.45)}
+.btn-primary:hover,.sub:hover:not(:disabled){box-shadow:0 0 30px rgba(129,140,248,.65)}
 .pb{background:linear-gradient(90deg,#8b5cf6,#22d3ee)}
-.btn-maker{color:#fff;background:linear-gradient(135deg,#6d28d9,#a855f7)}
-.btn-maker svg path,.btn-maker svg rect{fill:#fff}
-.btn-admin{color:#05030f;background:linear-gradient(135deg,#22d3ee,#a78bfa)}
+.btn-maker,.btn-admin,.btn-profile{color:#dfe4ff;background:rgba(91,108,255,.14);border:1px solid rgba(129,140,248,.4);box-shadow:none}
+.btn-maker:hover,.btn-admin:hover,.btn-profile:hover{background:rgba(91,108,255,.26);border-color:#818cf8;box-shadow:0 0 20px rgba(99,102,241,.35);transform:none}
+.btn-admin{color:#67e8f9;border-color:rgba(34,211,238,.45);background:rgba(34,211,238,.1)}
+.btn-admin:hover{background:rgba(34,211,238,.2);border-color:#22d3ee;box-shadow:0 0 20px rgba(34,211,238,.3)}
 ::selection{background:rgba(139,92,246,.5)}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#3b2f80;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
 
