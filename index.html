@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="FuriousTubes — uploadez et partagez vos vidéos, montez-les avec Furious Maker.">
-<meta name="theme-color" content="#080808">
+<meta name="theme-color" content="#05030f">
 <title>FuriousTubes</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 
@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/toast.css">
 <link rel="stylesheet" href="css/maker.css">
+<link rel="stylesheet" href="css/galaxy.css">
 </head>
 <body>
 
@@ -75,7 +76,7 @@
 <!-- AUTH MODAL -->
 <div class="ov" id="authOv">
   <div class="modal">
-    <h2>🔥 <span>FURIOUSTUBES</span></h2>
+    <h2>🌌 <span>FURIOUSTUBES</span></h2>
     <div class="tabs">
       <button class="tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
       <button class="tab" id="tabReg" onclick="switchTab('register')">Inscription</button>
@@ -279,7 +280,7 @@
 <header class="topbar">
   <button class="back-btn" onclick="goBack()">← Menu</button>
   <div class="logo">
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;flex-shrink:0"><defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6a00"/><stop offset="100%" stop-color="#ff9a3c"/></linearGradient></defs><path d="M5 3l14 9-14 9V3z" fill="url(#lg1)"/><rect x="17" y="3" width="3" height="18" rx="1.5" fill="url(#lg1)" opacity=".4"/></svg>
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;flex-shrink:0"><defs><linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#c084fc"/></linearGradient></defs><path d="M5 3l14 9-14 9V3z" fill="url(#lg1)"/><rect x="17" y="3" width="3" height="18" rx="1.5" fill="url(#lg1)" opacity=".4"/></svg>
     Furious Maker
   </div>
   <div class="proj-name" contenteditable="true" spellcheck="false">Sans titre</div>
@@ -503,6 +504,7 @@
 <script src="js/maker/projects.js"></script>
 
 <!-- Démarrage -->
+<script src="js/galaxy.js"></script>
 <script src="js/main.js"></script>
 
 <!-- YouTube IFrame API (chargée après music.js qui définit onYouTubeIframeAPIReady) -->
