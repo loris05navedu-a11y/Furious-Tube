@@ -1,6 +1,9 @@
 /* FuriousTubes — header, hero, catégories, grille */
 /* HEADER */
 header{position:sticky;top:0;z-index:100;background:rgba(5,3,15,.82);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:8px 14px;display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;min-height:58px;min-width:0}
+/* Tablette et petit écran */
+@media(max-width:768px){header{padding:8px 12px;min-height:54px;gap:6px}}
+@media(max-width:480px){header{padding:6px 10px;min-height:50px;gap:4px 8px}}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;background:linear-gradient(90deg,var(--fire),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0}
 .spacer{flex:1;min-width:0}
 /* Barre de boutons : occupe toute la largeur restante ; les boutons se partagent la ligne et passent dessous si l'écran est étroit */
@@ -20,6 +23,9 @@ header .hbar>:not(#headerRight),header #headerRight>*{flex:1 1 0;min-width:0;wid
 .btn-primary:hover{box-shadow:0 0 28px rgba(124,58,237,.45);transform:translateY(-1px)}
 .btn-ghost{background:none;border:1px solid var(--border);color:var(--muted)}
 .btn-ghost:hover{border-color:var(--text);color:var(--text)}
+/* Responsive buttons */
+@media(max-width:768px){.btn{padding:6px 10px;font-size:11px}}
+@media(max-width:600px){.btn{padding:5px 10px;font-size:10px;gap:3px}}
 .user-chip{background:var(--bg3);border:1px solid var(--border);border-radius:99px;padding:4px 10px 4px 5px;display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;transition:border-color .2s;flex-shrink:1;min-width:0}
 .user-chip:hover{border-color:var(--fire)}
 .user-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
@@ -32,6 +38,10 @@ header .hbar>:not(#headerRight),header #headerRight>*{flex:1 1 0;min-width:0;wid
 .hero h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,8vw,90px);line-height:.95;letter-spacing:3px}
 .hero h1 .outline{-webkit-text-stroke:1px rgba(124,58,237,.5);-webkit-text-fill-color:transparent}
 .hero p{color:var(--muted);margin-top:12px;font-size:14px}
+/* Tablette */
+@media(max-width:768px){.hero{padding:32px 24px 28px}.hero h1{font-size:clamp(36px,6vw,64px);letter-spacing:2px}}
+/* Téléphone */
+@media(max-width:600px){.hero{padding:24px 16px 20px}.hero h1{font-size:clamp(32px,6vw,48px);letter-spacing:1px}.hero p{font-size:13px;margin-top:8px}}
 
 /* CATEGORIES */
 .cats{display:flex;gap:8px;overflow-x:auto;padding:0 28px 16px;scrollbar-width:none}
@@ -41,14 +51,22 @@ header .hbar>:not(#headerRight),header #headerRight>*{flex:1 1 0;min-width:0;wid
 .cat-btn.active,.cat-btn.active:hover{background:#f1eeff;color:#05030f;border-color:transparent}
 .special-cat{background:rgba(124,58,237,.08);border-color:rgba(124,58,237,.4);color:var(--text);font-weight:600}
 .special-cat:hover{background:rgba(139,92,246,.28)}
+/* Responsive categories */
+@media(max-width:768px){.cats{padding:0 24px 14px;gap:6px}.cat-btn{height:30px;padding:0 10px;font-size:13px}}
+@media(max-width:600px){.cats{padding:0 12px 12px;gap:6px}.cat-btn{height:28px;padding:0 10px;font-size:12px}}
 
 main{padding:28px;max-width:1440px;margin:0 auto}
-.bar{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
 .bar-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted)}
 .pill{background:var(--bg3);border:1px solid var(--border);padding:2px 10px;border-radius:99px;font-size:11px;color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:36px 16px}
 
-@media(max-width:600px){main{padding:16px 0}.bar{padding:0 16px}.grid{grid-template-columns:1fr;gap:6px}.hero{padding:28px 16px 24px}.cats{padding:0 16px 14px}}
+/* Tablette */
+@media(max-width:1024px){main{padding:24px}.grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:28px 14px}.bar-title{font-size:16px}}
+/* Petite tablette/grand tel */
+@media(max-width:768px){main{padding:20px}.grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:24px 12px}.bar{gap:10px}.bar-title{font-size:15px}}
+/* Téléphone */
+@media(max-width:600px){main{padding:16px 0}.bar{padding:0 16px;gap:8px;margin-bottom:16px}.grid{grid-template-columns:1fr;gap:6px;padding:0 12px}.bar-title{font-size:14px}}
 
 /* BOUTONS SPÉCIAUX (anciens styles inline) */
 .btn-maker{background:linear-gradient(135deg,#8b5cf6,#c084fc);color:#000;border:none;padding:7px 14px;border-radius:7px;font-size:12px;font-weight:800;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;flex-shrink:0;box-shadow:0 0 16px rgba(139,92,246,.3);transition:all .2s;letter-spacing:.3px}

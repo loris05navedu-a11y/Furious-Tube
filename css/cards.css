@@ -21,6 +21,20 @@
 .yt-ch{display:inline-block;max-width:100%;vertical-align:top}
 .yt-ch:hover{color:var(--text)}
 
+/* Responsive Card Styling */
+@media(max-width:768px){
+  .yt-av{width:32px;height:32px;font-size:12px}
+  .yt-title{font-size:14px}
+  .yt-ch,.yt-meta{font-size:12px}
+}
+
+@media(max-width:600px){
+  .yt-info{gap:10px;padding:10px 0 0}
+  .yt-av{width:28px;height:28px;font-size:11px}
+  .yt-title{font-size:13px}
+  .yt-ch,.yt-meta{font-size:11px;line-height:1.4}
+}
+
 .empty{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--muted)}
 .empty .icon{font-size:52px;margin-bottom:16px;opacity:.5}
 .empty h3{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--text);margin-bottom:8px}

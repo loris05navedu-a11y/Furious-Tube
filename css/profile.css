@@ -29,3 +29,38 @@
 .logout-btn:hover{border-color:#ff6060;color:#ff6060}
 .profile-head{display:flex;align-items:flex-start;justify-content:space-between}
 .profile-actions{display:flex;gap:6px;align-items:center}
+
+/* Responsive Profile */
+@media(max-width:768px){
+  .profile-box{max-width:100%;border-radius:12px}
+  .profile-avatar{width:56px;height:56px;font-size:24px;border-width:2px;bottom:-28px;left:14px}
+  .profile-body{padding:38px 14px 18px}
+  .profile-name{font-size:20px}
+  .profile-stats{grid-template-columns:1fr 1fr 1fr;gap:6px;margin:10px 0}
+  .stat-box{padding:9px;border-radius:8px}
+  .stat-num{font-size:18px}
+  .pv-item{gap:7px;padding:6px}
+  .pv-thumb{width:50px;height:28px}
+  .pv-title{font-size:11px}
+}
+
+@media(max-width:480px){
+  .profile-ov{padding:12px}
+  .profile-box{max-width:100%;border-radius:16px 16px 0 0}
+  .profile-banner{height:60px}
+  .profile-avatar{width:48px;height:48px;font-size:20px;bottom:-24px}
+  .profile-body{padding:32px 12px 16px}
+  .profile-name{font-size:18px;letter-spacing:1px}
+  .profile-since{font-size:10px}
+  .profile-stats{gap:4px;margin:8px 0}
+  .stat-box{padding:7px;border-radius:6px;font-size:11px}
+  .stat-num{font-size:16px}
+  .stat-label{font-size:8px}
+  .profile-videos h4{font-size:9px;margin-bottom:7px}
+  .pv-list{gap:5px}
+  .pv-item{gap:6px;padding:5px;border-radius:6px}
+  .pv-thumb{width:44px;height:25px;border-radius:3px}
+  .pv-title{font-size:10px}
+  .pv-likes{font-size:9px}
+  .ban-btn,.logout-btn{padding:4px 10px;font-size:10px}
+}

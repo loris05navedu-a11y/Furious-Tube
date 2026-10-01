@@ -87,11 +87,64 @@
 .vp-portrait .vp-time{font-size:11px}
 .vp-portrait .vp-volwrap:hover .vp-vol{width:48px}
 .vp-portrait .vp-btn{width:32px;height:32px}
-@media (max-width:520px){
-  .vp-volwrap .vp-vol{display:none}
-  .vp-btn{width:34px;height:34px}
-  .vp-ctrl{padding:22px 8px 6px}
+
+/* Responsive Video Player */
+/* Tablette landscape */
+@media(max-width:1024px){
+  .vp-btn{width:34px;height:34px;border-radius:7px}
+  .vp-btn svg{width:18px;height:18px}
+  .vp-big{width:60px;height:60px;margin:-30px 0 0 -30px}
+  .vp-big svg{width:28px;height:28px}
+  .vp-time{font-size:11px}
+  .vp-ctrl{padding:24px 10px 6px}
 }
+
+/* Petite tablette/grand téléphone */
+@media(max-width:768px){
+  .vp-btn{width:32px;height:32px;border-radius:6px;gap:2px}
+  .vp-btn svg{width:17px;height:17px}
+  .vp-big{width:54px;height:54px;margin:-27px 0 0 -27px}
+  .vp-big svg{width:26px;height:26px}
+  .vp-time{font-size:10px;margin-left:4px}
+  .vp-ctrl{padding:20px 8px 4px;gap:3px}
+  .vp-volwrap:hover .vp-vol{width:60px}
+  .vp-fx{padding:12px 16px;font-size:12px;margin-top:-24px}
+}
+
+/* Téléphone */
+@media(max-width:600px){
+  .vp-btn{width:30px;height:30px;border-radius:5px}
+  .vp-btn svg{width:16px;height:16px}
+  .vp-big{width:48px;height:48px;margin:-24px 0 0 -24px;font-size:20px}
+  .vp-big svg{width:24px;height:24px}
+  .vp-volwrap .vp-vol{display:none}
+  .vp-time{font-size:9px;margin-left:3px}
+  .vp-ctrl{padding:18px 6px 4px}
+  .vp-row{gap:2px}
+  .vp-fx{padding:10px 14px;font-size:11px;margin-top:-22px}
+  .vp-menu{bottom:36px;min-width:70px;font-size:11px}
+  .vp-menu button{padding:6px 10px;font-size:11px}
+  .vp-track{height:3px}
+  .vp-bar:hover .vp-track{height:5px}
+  .vp-thumb{width:12px;height:12px;margin:-6px 0 0 -6px}
+}
+
+/* Très petit écran */
+@media(max-width:480px){
+  .vp-btn{width:28px;height:28px}
+  .vp-time{font-size:8px}
+  .vp-ctrl{padding:14px 4px 2px}
+  .vp-big{width:44px;height:44px;margin:-22px 0 0 -22px}
+  .vp-row{gap:1px}
+}
+
 .vp.fs .vp-btn{width:42px;height:42px}
 .vp.fs .vp-btn svg{width:24px;height:24px}
 .vp.fs .vp-time{font-size:14px}
+
+/* Fullscreen responsiveness */
+@media(max-width:768px){
+  .vp.fs .vp-btn{width:36px;height:36px}
+  .vp.fs .vp-btn svg{width:20px;height:20px}
+  .vp.fs .vp-time{font-size:12px}
+}

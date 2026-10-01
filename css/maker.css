@@ -225,4 +225,55 @@ body.light{
 #fm-overlay .rproj-confirm-btns{display:flex;gap:6px}
 #fm-overlay .rproj-yes,#fm-overlay .rproj-no{padding:4px 10px;border-radius:5px;border:1px solid var(--bd2);background:var(--s3);color:var(--tx);font-family:'Sora',sans-serif;font-size:11px;cursor:pointer}
 #fm-overlay .rproj-yes{background:#ff3d71;border-color:#ff3d71;color:#fff}
+/* Responsive Furious Maker */
+@media(max-width:1024px){
+  #fm-overlay .main{grid-template-columns:170px 1fr 220px}
+  #fm-overlay .mcard{width:160px;padding:20px 16px;font-size:11px}
+  #fm-overlay .menu-cards{gap:10px;margin-bottom:36px}
+  #fm-overlay .recent-grid{grid-template-columns:repeat(3,1fr)}
+  #fm-overlay #fm-vid{width:480px;height:270px}
+}
+@media(max-width:768px){
+  #fm-overlay{--s1:#0d0a26}
+  #fm-overlay #menu-screen{padding:40px 16px 24px}
+  #fm-overlay .fm-logo{font-size:48px}
+  #fm-overlay .menu-cards{gap:8px;flex-direction:column}
+  #fm-overlay .mcard{width:100%;padding:18px 14px}
+  #fm-overlay .recent-grid{grid-template-columns:repeat(2,1fr)}
+  #fm-overlay .main{grid-template-columns:140px 1fr 180px;gap:0}
+  #fm-overlay #fm-app{grid-template-rows:44px 1fr 150px}
+  #fm-overlay .topbar{padding:0 10px;gap:8px}
+  #fm-overlay .logo{font-size:14px}
+  #fm-overlay #fm-vid{width:360px;height:202px}
+  #fm-overlay .menu-grid-bg{background-size:40px 40px}
+}
+@media(max-width:600px){
+  #fm-overlay{font-size:13px}
+  #fm-overlay #menu-screen{padding:30px 12px 16px}
+  #fm-overlay .fm-logo{font-size:36px;margin-bottom:6px}
+  #fm-overlay .fm-tag{font-size:11px;margin-bottom:24px}
+  #fm-overlay .theme-row{margin-bottom:20px}
+  #fm-overlay .menu-cards{gap:6px}
+  #fm-overlay .mcard{padding:16px 10px;font-size:10px;width:100%}
+  #fm-overlay .mcard-icon{font-size:24px}
+  #fm-overlay .recent-section{max-width:100%}
+  #fm-overlay .recent-grid{grid-template-columns:1fr;gap:8px}
+  #fm-overlay .main{grid-template-columns:100px 1fr;padding:0}
+  #fm-overlay .rpanel{border-left:none;display:none}
+  #fm-overlay .lpanel{border-right:none;width:100px;min-width:100px}
+  #fm-overlay .ptabs{flex-direction:column}
+  #fm-overlay .ptab{padding:8px 0;font-size:9px}
+  #fm-overlay #fm-app{grid-template-rows:40px 1fr 120px}
+  #fm-overlay .topbar{padding:0 8px;height:40px;font-size:11px}
+  #fm-overlay .logo{font-size:12px}
+  #fm-overlay .proj-name{font-size:11px}
+  #fm-overlay .btn{padding:4px 8px;font-size:10px}
+  #fm-overlay .preview{display:none}
+  #fm-overlay .pview{flex:0.5}
+  #fm-overlay #fm-vid{width:100%;height:auto;max-height:200px}
+  #fm-overlay .timeline{flex:1}
+  #fm-overlay .pbar{padding:6px 8px}
+  #fm-overlay .timedisp{font-size:9px}
+  #fm-overlay .cbtn{width:26px;height:26px;font-size:11px}
+}
 @media(max-width:700px){#fm-overlay .recent-grid{grid-template-columns:repeat(2,1fr)}#fm-overlay .menu-cards{flex-direction:column}}

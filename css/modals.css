@@ -3,6 +3,14 @@
 .ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
 .ov.open{opacity:1;pointer-events:all}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:14px;width:100%;max-width:440px;padding:24px;position:relative;transform:translateY(16px);transition:transform .3s;max-height:90vh;overflow-y:auto}
+/* Mobile responsiveness pour modales */
+@media(max-width:480px){
+  .ov{padding:12px;align-items:flex-end}
+  .modal{max-width:100%;border-radius:20px 20px 0 0;max-height:85vh;padding:20px}
+}
+@media(max-width:600px){
+  .modal{max-width:100%;padding:20px}
+}
 .ov.open .modal{transform:translateY(0)}
 .modal h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:18px}
 .modal h2 span{color:var(--fire)}
@@ -20,6 +28,9 @@
 .fg{margin-bottom:12px}
 .fg label{display:block;font-size:10px;color:var(--muted);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.8px}
 .fg input,.fg select,.fg textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-family:'DM Sans',sans-serif;font-size:13px;transition:border-color .2s}
+@media(max-width:480px){
+  .fg input,.fg select,.fg textarea{padding:8px 10px;font-size:12px;border-radius:6px}
+}
 .fg select option{background:var(--bg3)}
 .fg textarea{resize:vertical;min-height:60px}
 .fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--fire)}
@@ -45,8 +56,14 @@
 .admin-modal{max-width:640px}
 #adminOv{z-index:450}
 .admin-list{display:flex;flex-direction:column;gap:8px}
-.adm-row{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-size:12px}
+.adm-row{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-size:12px;flex-wrap:wrap}
 .adm-row img{width:64px;height:36px;object-fit:cover;border-radius:4px;background:#111;flex-shrink:0}
+@media(max-width:600px){
+  .adm-row{gap:8px;padding:6px 8px;font-size:11px}
+  .adm-row img{width:56px;height:32px}
+  .adm-btns{flex-wrap:wrap;justify-content:flex-end;gap:4px}
+  .adm-btns button{padding:3px 8px;font-size:10px}
+}
 .adm-main{flex:1;min-width:0}
 .adm-main b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px}
 .adm-main span{color:var(--muted);font-size:11px}

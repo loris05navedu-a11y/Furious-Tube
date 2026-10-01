@@ -6,4 +6,15 @@
 .toast.er{border-color:#f55}.toast.er .td{background:#f55}
 .td{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--muted)}
 .spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;flex-shrink:0}
+
+/* Responsive Toast Notifications */
+@media(max-width:768px){
+  .toast{bottom:16px;right:16px;min-width:160px;padding:8px 12px;font-size:11px}
+}
+
+@media(max-width:600px){
+  .toast{bottom:12px;right:12px;left:12px;min-width:auto;border-radius:8px;padding:8px 12px;font-size:11px;gap:6px}
+  .td{width:6px;height:6px}
+}
+
 @keyframes sp{to{transform:rotate(360deg)}}
