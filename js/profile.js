@@ -22,7 +22,7 @@ async function openProfileById(uid,uname){
 
   document.getElementById('profName').textContent=uname||'';
   cancelNameEdit();
-  const nb=document.getElementById('nameEditBtn');if(nb) nb.style.display=isMe?'':'none';
+  const nb=document.getElementById('nameEditBtn');if(nb){nb.style.display=isMe?'':'none';nb.title=currentUser&&currentUser.isAdmin?"Modifier le nom d'utilisateur":"Modifier le nom d'utilisateur (1 fois / 24 h)";}
   const crown=document.getElementById('profCrown');
   crown.style.display=(isMe&&currentUser.isAdmin)?'':'none';
   document.getElementById('adminPending').style.display=(isMe&&adminPending())?'':'none';
@@ -175,7 +175,7 @@ async function saveName(){
     const idx=users.findIndex(u=>u.id===currentUser.id);
     if(idx===-1) throw new Error('Compte introuvable');
     const last=users[idx].usernameChangedAt||0;
-    if(Date.now()-last<NAME_COOLDOWN){toast('Prochain changement possible dans '+fmtWait(NAME_COOLDOWN-(Date.now()-last)),'er');return;}
+    if(!currentUser.isAdmin&&Date.now()-last<NAME_COOLDOWN){toast('Prochain changement possible dans '+fmtWait(NAME_COOLDOWN-(Date.now()-last)),'er');return;}
     if(users.some(u=>u.id!==currentUser.id&&u.username?.toLowerCase()===name.toLowerCase())){toast('Ce pseudo est déjà pris ❌','er');return;}
     users[idx].username=name;users[idx].usernameChangedAt=Date.now();
     await setBin(CONFIG.USERS_BIN_ID,users);
