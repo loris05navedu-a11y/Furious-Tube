@@ -24,7 +24,7 @@ const FIREBASE_CONFIG = {
 const ADMIN_EMAILS = [
   'thaodubois005@gmail.com',
   'loris05.nav@gmail.com',
-  'loris05.nav-edu@gmail.com',
+  'loris05.nav.edu@gmail.com',
 ];
 const ADMIN_USERNAME = 'furious shorter'; // pseudo réservé (interdit aux non-admins)
 
