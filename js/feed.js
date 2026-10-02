@@ -67,7 +67,7 @@ const videoMatches=(v,q)=>fuzzyScore(q,[[v.title,1],[v.uploader,.9],[v.category,
 let usersCache=null,usersLoadedAt=0;
 async function ensureUsers(){
   if(usersCache&&Date.now()-usersLoadedAt<60000) return;
-  try{usersCache=(await getBin(CONFIG.USERS_BIN_ID)).filter(u=>u.id&&u.username&&!u.banned);usersLoadedAt=Date.now();}
+  try{usersCache=(await getBin(CONFIG.USERS_BIN_ID)).filter(u=>u.id&&u.username&&!isBanActive(u));usersLoadedAt=Date.now();}
   catch(e){usersCache=usersCache||[];}
 }
 function accountsSection(q,all){

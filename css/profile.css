@@ -90,3 +90,9 @@
 .profile-name-row .profile-name{white-space:normal;word-break:break-word}
 .profile-box{max-width:460px}
 .logout-btn,.ban-btn{white-space:nowrap}
+
+.prof-staff{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;padding:2px 8px 2px 5px;border-radius:99px;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.45);color:#67e8f9;font-size:11px;font-weight:700;letter-spacing:.3px}
+.prof-staff svg{display:block}
+.staff-btn{background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.4);color:#67e8f9;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.staff-btn:hover{background:rgba(34,211,238,.2)}
+.adm-tag.staff{background:rgba(34,211,238,.14);color:#67e8f9}

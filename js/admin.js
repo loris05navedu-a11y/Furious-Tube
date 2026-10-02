@@ -2,7 +2,8 @@
 let adminView='videos';
 
 function openAdmin(){
-  if(!currentUser?.isAdmin) return;
+  if(!canModerate()) return;
+  document.getElementById('admTitle').textContent=currentUser.isAdmin?'👑 ADMINISTRATION':'🦺 MODÉRATION';
   document.getElementById('adminOv').classList.add('open');
   adminTab(adminView);
 }
@@ -40,14 +41,16 @@ async function renderAdminList(){
       if(!list.length){box.innerHTML='<div class="no-comments">Aucun utilisateur</div>';return;}
       box.innerHTML=list.map(u=>{
         const n=videos.filter(v=>v.uploaderId===u.id).length;
-        const self=u.id===currentUser.id;
+        const self=u.id===currentUser.id,st=isStaffRec(u),bn=isBanActive(u),isAdm=currentUser.isAdmin;
+        const canBan=!u.admin&&!self&&(isAdm||(!st&&!(bn&&!u.bannedUntil)));
         return `<div class="adm-row">
           <div class="av-md">${u.avatar?`<img src="${u.avatar}">`:escHtml((u.username||'?')[0].toUpperCase())}</div>
-          <div class="adm-main"><b>${escHtml(u.username||'?')}${u.admin?'<span class="adm-tag">admin</span>':''}${u.banned?'<span class="adm-tag">banni</span>':''}</b>
+          <div class="adm-main"><b>${escHtml(u.username||'?')}${u.admin?'<span class="adm-tag">admin</span>':''}${st?`<span class="adm-tag staff">staff${u.staff.until?' · '+fmtWait(u.staff.until-Date.now()):''}</span>`:''}${bn?`<span class="adm-tag">banni${u.bannedUntil?' · '+fmtWait(u.bannedUntil-Date.now()):''}</span>`:''}</b>
             <span>${n} vidéo(s) · ${(u.subscribers||[]).length} abonné(s)</span></div>
           <div class="adm-btns">
             <button onclick="closeAdmin();openProfileById('${u.id}','${escHtml(u.username||'')}')">Profil</button>
-            ${(u.admin||self)?'':`<button class="danger" onclick="adminBan('${u.id}',${!u.banned})">${u.banned?'Débannir':'Bannir'}</button>`}
+            ${(isAdm&&!u.admin&&!self)?`<button onclick="openStaffModal('${u.id}','${escHtml(u.username||'')}',${st})">🦺 Staff</button>`:''}
+            ${canBan?`<button class="danger" onclick="adminBan('${u.id}')">${bn?'Débannir':'Bannir'}</button>`:''}
           </div></div>`;
       }).join('');
     }
@@ -60,7 +63,7 @@ async function adminOpenVideo(id){
   if(v){closeAdmin();openPlayer(v);}
 }
 async function adminSetHidden(id,hidden){
-  if(!currentUser?.isAdmin) return;
+  if(!await actorRole()) return;
   const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
   const i=videos.findIndex(v=>v.id===id);if(i===-1)return;
   videos[i].hidden=hidden;if(!hidden)videos[i].reports=[];
@@ -69,18 +72,13 @@ async function adminSetHidden(id,hidden){
   renderAdminList();loadFeed();
 }
 async function adminDeleteVideo(id){
-  if(!currentUser?.isAdmin||!confirm('Supprimer définitivement cette vidéo ?')) return;
+  if(!await actorRole()||!confirm('Supprimer définitivement cette vidéo ?')) return;
   const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
   await setBin(CONFIG.VIDEOS_BIN_ID,videos.filter(v=>v.id!==id));
   toast('Vidéo supprimée','ok');
   renderAdminList();loadFeed();
 }
-async function adminBan(uid,ban){
-  if(!currentUser?.isAdmin||!confirm(ban?'Bannir cet utilisateur ?':'Débannir cet utilisateur ?')) return;
-  const users=await getBin(CONFIG.USERS_BIN_ID);
-  const i=users.findIndex(u=>u.id===uid);if(i===-1||users[i].admin)return;
-  users[i].banned=ban;
-  await setBin(CONFIG.USERS_BIN_ID,users);
-  toast(ban?'Utilisateur banni 🚫':'Utilisateur débanni ✅','ok');
-  renderAdminList();
+async function adminBan(uid){
+  try{if(await toggleBan(uid)) renderAdminList();}
+  catch(e){toast('Erreur : '+e.message,'er');}
 }

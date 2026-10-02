@@ -19,7 +19,7 @@ function openPlayer(v){
   else av.textContent=(v.uploader||'?')[0].toUpperCase();
   document.getElementById('pupname').textContent=v.uploader;
   document.getElementById('psubs').textContent='';
-  const isAdmin=!!(currentUser&&currentUser.isAdmin);
+  const isAdmin=canModerate();
   document.getElementById('delbtn').style.display=(currentUser&&(currentUser.id===v.uploaderId||isAdmin))?'':'none';
   const hideBtn=document.getElementById('hidebtn');
   hideBtn.style.display=isAdmin?'':'none';
@@ -77,7 +77,7 @@ window.addEventListener('popstate',()=>{
 function openFromUrl(){
   const id=urlVideoId();if(!id)return;
   const v=findVideo(id);
-  if(v&&(!v.hidden||(currentUser&&currentUser.isAdmin))){
+  if(v&&(!v.hidden||canModerate())){
     history.replaceState({ftv:id},'',location.href);
     openPlayer(v);
   }else toast('Vidéo introuvable','er');

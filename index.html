@@ -153,12 +153,29 @@
 <div class="ov" id="adminOv">
   <div class="modal admin-modal">
     <button class="x" onclick="closeAdmin()">✕</button>
-    <h2>👑 <span>ADMINISTRATION</span></h2>
+    <h2><span id="admTitle">👑 ADMINISTRATION</span></h2>
     <div class="tabs">
       <button class="tab active" id="admTabVids" onclick="adminTab('videos')">Vidéos</button>
       <button class="tab" id="admTabUsers" onclick="adminTab('users')">Utilisateurs</button>
     </div>
     <div id="adminList" class="admin-list"></div>
+  </div>
+</div>
+
+<!-- STAFF MODAL -->
+<div class="ov" id="staffOv" onclick="if(event.target.id==='staffOv')closeStaffModal()">
+  <div class="modal">
+    <button class="x" onclick="closeStaffModal()">✕</button>
+    <h2>🦺 <span>MEMBRE DU STAFF</span></h2>
+    <p class="staff-who" id="staffWho"></p>
+    <div class="fg"><label>Durée</label>
+      <select id="staffDur">
+        <option value="1">1 heure</option><option value="6">6 heures</option><option value="24">24 heures</option>
+        <option value="168">7 jours</option><option value="720">30 jours</option><option value="0">Indéfiniment</option>
+      </select></div>
+    <p class="staff-rights">Mêmes outils de modération qu'un admin, avec des limites : bannissement de 2 h maximum, changement de pseudo toutes les 4 h, impossible de nommer du staff ou de sanctionner un admin / un autre staff.</p>
+    <button class="sub" id="staffSave" onclick="saveStaff()">Nommer membre du staff</button>
+    <button class="link-btn" id="staffRemove" onclick="removeStaff()">Retirer du staff</button>
   </div>
 </div>
 
@@ -238,6 +255,7 @@
         <div>
           <div class="profile-name-row">
             <div class="profile-name" id="profName"></div>
+            <span class="prof-staff" id="profStaff" style="display:none"></span>
             <span class="prof-crown" id="profCrown" title="Administrateur" style="display:none"><svg viewBox="0 0 24 24" width="20" height="20" aria-label="Administrateur"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="5" r="1.4" fill="#fde68a"/><circle cx="3" cy="8" r="1.2" fill="#fde68a"/><circle cx="21" cy="8" r="1.2" fill="#fde68a"/></svg>Admin</span>
             <button class="name-edit" id="nameEditBtn" type="button" onclick="startNameEdit()" title="Modifier le nom d'utilisateur (1 fois / 24 h)" aria-label="Modifier le nom d'utilisateur" style="display:none"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.500l4 4"/></svg></button>
           </div>
@@ -249,6 +267,7 @@
           <div class="profile-since" id="profSince"></div>
         </div>
         <div class="profile-actions">
+          <button class="staff-btn" id="staffBtn" type="button" onclick="openStaffModal(this.dataset.uid,document.getElementById('profName').textContent,this.dataset.active==='1')" style="display:none">🦺 Staff</button>
           <button class="ban-btn" id="banBtn" onclick="doBan()" style="display:none">🚫 Bannir</button>
           <button class="logout-btn" id="logoutBtn" onclick="closeProfile();doLogout()" style="display:none">↪ Déconnexion</button>
           <button class="x" style="position:static" onclick="closeProfile()">✕</button>
@@ -521,6 +540,7 @@
 <script src="js/utils.js"></script>
 <script src="js/api.js"></script>
 <script src="js/session.js"></script>
+<script src="js/staff.js"></script>
 <script src="js/header.js"></script>
 <script src="js/categories.js"></script>
 <script src="js/auth.js"></script>

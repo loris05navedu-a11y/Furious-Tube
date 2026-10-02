@@ -66,6 +66,14 @@ async function ensureProfile(fbUser,pseudo){
     user={id:fbUser.uid,username:name,date:Date.now(),timeOnSite:0,banned:false};
     await setBin(CONFIG.USERS_BIN_ID,[...users.filter(u=>u.id),user]);
   }
+  if(user.banned&&!isBanActive(user)){
+    user.banned=false;delete user.bannedUntil;
+    try{
+      const all=await getBin(CONFIG.USERS_BIN_ID);
+      const i=all.findIndex(u=>u.id===user.id);
+      if(i>=0){all[i].banned=false;delete all[i].bannedUntil;await setBin(CONFIG.USERS_BIN_ID,all);}
+    }catch(e){}
+  }
   const admin=isAdminFbUser(fbUser);
   if(!!user.admin!==admin){
     user.admin=admin;
@@ -151,7 +159,7 @@ async function doLogin(){
     authBusy=true;
     const cred=await fbAuth.signInWithEmailAndPassword(email,pass);
     const user=await ensureProfile(cred.user);
-    if(user.banned){await fbAuth.signOut();showAuthErr('🚫 Votre compte a été banni par un administrateur.');}
+    if(isBanActive(user)){await fbAuth.signOut();showAuthErr(banMessage(user));}
     else{finishLogin(user,cred.user);toast(`Bienvenue ${user.username} ! 🔥`,'ok');verifyAdminEmail(cred.user);}
   }catch(e){showAuthErr(authErrorMsg(e));}
   authBusy=false;
@@ -168,7 +176,7 @@ async function doGoogleLogin(){
     authBusy=true;
     const cred=await fbAuth.signInWithPopup(provider);
     const user=await ensureProfile(cred.user);
-    if(user.banned){await fbAuth.signOut();showAuthErr('🚫 Votre compte a été banni par un administrateur.');}
+    if(isBanActive(user)){await fbAuth.signOut();showAuthErr(banMessage(user));}
     else{finishLogin(user,cred.user);toast(`Bienvenue ${user.username} ! 🔥`,'ok');}
   }catch(e){
     if(e.code==='auth/popup-blocked'){authBusy=false;return fbAuth.signInWithRedirect(provider);}
@@ -189,7 +197,7 @@ async function doResetPassword(){
 
 function finishLogin(user,fbUser){
   const wasLogged=!!currentUser;
-  saveSession({id:user.id,username:user.username,avatar:user.avatar||null,isAdmin:isAdminFbUser(fbUser)});
+  saveSession({id:user.id,username:user.username,avatar:user.avatar||null,isAdmin:isAdminFbUser(fbUser),staff:isStaffRec(user)?{until:user.staff.until||0}:null});
   document.getElementById('authOv').classList.remove('open');
   renderHeader();
   if(!wasLogged) startTimeTracking();
@@ -210,7 +218,7 @@ function watchAuth(){
     try{
       if(isAdminEmail(fbUser.email)&&!fbUser.emailVerified){try{await fbUser.reload();}catch(e){}}
       const user=await ensureProfile(fbUser);
-      if(user.banned){await fbAuth.signOut();clearSession();renderHeader();return;}
+      if(isBanActive(user)){await fbAuth.signOut();clearSession();renderHeader();return;}
       finishLogin(user,fbUser);
       renderHeader();
     }catch(e){/* Firestore indisponible : on garde la session locale */}

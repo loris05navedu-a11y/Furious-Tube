@@ -15,7 +15,7 @@ function renderComments(comments){
       <div class="comment-body">
         <div class="comment-author" onclick="openProfileById('${c.authorId||''}','${c.author}')">${c.author}</div>
         <div class="comment-text">${escHtml(c.text)}</div>
-        <div class="comment-date">${fmtDate(c.date)}${(currentUser&&(currentUser.isAdmin||currentUser.id===c.authorId))?` · <span class="comment-del" onclick="deleteComment('${c.id}')">Supprimer</span>`:''}</div>
+        <div class="comment-date">${fmtDate(c.date)}${(currentUser&&(canModerate()||currentUser.id===c.authorId))?` · <span class="comment-del" onclick="deleteComment('${c.id}')">Supprimer</span>`:''}</div>
       </div>
     </div>`).join('');
 }
@@ -48,7 +48,7 @@ async function deleteComment(cid){
     const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
     const idx=videos.findIndex(v=>v.id===curId);if(idx===-1)return;
     const c=(videos[idx].comments||[]).find(x=>x.id===cid);
-    if(!c||!(currentUser.isAdmin||c.authorId===currentUser.id)) return;
+    if(!c||!(canModerate()||c.authorId===currentUser.id)) return;
     videos[idx].comments=videos[idx].comments.filter(x=>x.id!==cid);
     await setBin(CONFIG.VIDEOS_BIN_ID,videos);
     renderComments(videos[idx].comments);

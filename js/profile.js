@@ -22,9 +22,11 @@ async function openProfileById(uid,uname){
 
   document.getElementById('profName').textContent=uname||'';
   cancelNameEdit();
-  const nb=document.getElementById('nameEditBtn');if(nb){nb.style.display=isMe?'':'none';nb.title=currentUser&&currentUser.isAdmin?"Modifier le nom d'utilisateur":"Modifier le nom d'utilisateur (1 fois / 24 h)";}
+  const nb=document.getElementById('nameEditBtn');if(nb){nb.style.display=isMe?'':'none';nb.title=currentUser&&currentUser.isAdmin?"Modifier le nom d'utilisateur":isStaff()?"Modifier le nom d'utilisateur (1 fois / 4 h)":"Modifier le nom d'utilisateur (1 fois / 24 h)";}
   const crown=document.getElementById('profCrown');
   crown.style.display=(isMe&&currentUser.isAdmin)?'':'none';
+  document.getElementById('profStaff').style.display='none';
+  document.getElementById('staffBtn').style.display='none';
   document.getElementById('adminPending').style.display=(isMe&&adminPending())?'':'none';
   document.getElementById('profSince').textContent='Chargement...';
   document.getElementById('profSubs').textContent='—';
@@ -64,14 +66,27 @@ async function openProfileById(uid,uname){
     document.getElementById('profVids').textContent=uvideos.length;
     document.getElementById('profTime').textContent=hours>0?hours+'h':(mins>0?`${mins}min`:'0min');
 
-    // Show ban button for admin (not on own profile, not on other admin)
-    const banBtn=document.getElementById('banBtn');
-    const isAdmin=!!(currentUser&&currentUser.isAdmin);
-    const targetIsAdmin=!!user?.admin;
-    if(banBtn) banBtn.style.display=(isAdmin&&!isMe&&!targetIsAdmin)?'':'none';
-    if(banBtn&&user?.banned) banBtn.textContent='✅ Débannir';
-    if(banBtn) banBtn.dataset.banned=user?.banned?'1':'0';
-    if(banBtn) banBtn.dataset.uid=uid;
+    // Boutons de modération : admin = tout ; staff = pas d'admin ni de staff, et pas de levée d'un ban définitif
+    const banBtn=document.getElementById('banBtn'),staffBtn=document.getElementById('staffBtn');
+    const isAdmin=!!(currentUser&&currentUser.isAdmin),mod=canModerate();
+    const targetIsAdmin=!!user?.admin,targetStaff=isStaffRec(user),banned=isBanActive(user);
+    const canBan=mod&&!isMe&&!targetIsAdmin&&(isAdmin||(!targetStaff&&!(banned&&!user?.bannedUntil)));
+    if(banBtn){
+      banBtn.style.display=canBan?'':'none';
+      banBtn.textContent=banned?'✅ Débannir':'🚫 Bannir';
+      banBtn.dataset.banned=banned?'1':'0';banBtn.dataset.uid=uid;
+    }
+    if(staffBtn){
+      staffBtn.style.display=(isAdmin&&!isMe&&!targetIsAdmin)?'':'none';
+      staffBtn.dataset.uid=uid;staffBtn.dataset.active=targetStaff?'1':'0';
+      staffBtn.textContent=targetStaff?'🦺 Staff ✓':'🦺 Staff';
+    }
+    const sb=document.getElementById('profStaff');
+    if(targetStaff){
+      sb.innerHTML=BIB_SVG(21)+'Staff';
+      sb.title=user.staff.until?'Staff jusqu\'au '+fmtDate(user.staff.until):'Membre du staff';
+      sb.style.display='';
+    }else sb.style.display='none';
 
     const list=document.getElementById('profVideoList');
     if(!uvideos.length){list.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:14px">Aucune vidéo</div>';return;}
@@ -142,7 +157,6 @@ document.getElementById('avatarFileInput').addEventListener('change',async e=>{
 });
 
 // ── Changement de pseudo (1 fois toutes les 24 h) ──
-const NAME_COOLDOWN=24*3600*1000;
 function cancelNameEdit(){
   const f=document.getElementById('nameForm');if(!f) return;
   f.style.display='none';document.getElementById('profName').style.display='';
@@ -167,6 +181,8 @@ async function saveName(){
   const name=document.getElementById('nameInput').value.trim();
   if(name===currentUser.username){cancelNameEdit();return;}
   const err=checkUsername(name,!!currentUser.isAdmin);
+  const role=await actorRole();
+  const cd=role==='admin'?0:role==='staff'?STAFF_NAME_COOLDOWN:USER_NAME_COOLDOWN;
   if(err){toast(err,'er');return;}
   if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()&&!currentUser.isAdmin){toast('Ce pseudo est réservé ❌','er');return;}
   const ok=document.querySelector('#nameForm .name-ok');ok.disabled=true;
@@ -175,7 +191,7 @@ async function saveName(){
     const idx=users.findIndex(u=>u.id===currentUser.id);
     if(idx===-1) throw new Error('Compte introuvable');
     const last=users[idx].usernameChangedAt||0;
-    if(!currentUser.isAdmin&&Date.now()-last<NAME_COOLDOWN){toast('Prochain changement possible dans '+fmtWait(NAME_COOLDOWN-(Date.now()-last)),'er');return;}
+    if(Date.now()-last<cd){toast('Prochain changement possible dans '+fmtWait(cd-(Date.now()-last)),'er');return;}
     if(users.some(u=>u.id!==currentUser.id&&u.username?.toLowerCase()===name.toLowerCase())){toast('Ce pseudo est déjà pris ❌','er');return;}
     users[idx].username=name;users[idx].usernameChangedAt=Date.now();
     await setBin(CONFIG.USERS_BIN_ID,users);
