@@ -21,6 +21,8 @@ async function openProfileById(uid,uname){
   if(logoutBtn) logoutBtn.style.display=isMe?'':'none';
 
   document.getElementById('profName').textContent=uname||'';
+  cancelNameEdit();
+  const nb=document.getElementById('nameEditBtn');if(nb) nb.style.display=isMe?'':'none';
   document.getElementById('profSince').textContent='Chargement...';
   document.getElementById('profSubs').textContent='—';
   document.getElementById('profVids').textContent='—';
@@ -133,3 +135,59 @@ document.getElementById('avatarFileInput').addEventListener('change',async e=>{
   }catch(e){toast('Erreur upload photo : '+e.message,'er');}
   e.target.value='';
 });
+
+// ── Changement de pseudo (1 fois toutes les 24 h) ──
+const NAME_COOLDOWN=24*3600*1000;
+function cancelNameEdit(){
+  const f=document.getElementById('nameForm');if(!f) return;
+  f.style.display='none';document.getElementById('profName').style.display='';
+  const b=document.getElementById('nameEditBtn');
+  if(b&&currentUser&&viewingProfileId===currentUser.id) b.style.display='';
+}
+function startNameEdit(){
+  if(!currentUser||viewingProfileId!==currentUser.id) return;
+  const inp=document.getElementById('nameInput');
+  inp.value=currentUser.username;
+  document.getElementById('profName').style.display='none';
+  document.getElementById('nameEditBtn').style.display='none';
+  document.getElementById('nameForm').style.display='flex';
+  inp.focus();inp.select();
+}
+function fmtWait(ms){
+  const t=Math.max(1,Math.ceil(ms/60000)),h=Math.floor(t/60),m=t%60;
+  return h>0?`${h} h ${m} min`:`${m} min`;
+}
+async function saveName(){
+  if(!currentUser) return;
+  const name=document.getElementById('nameInput').value.trim();
+  if(name===currentUser.username){cancelNameEdit();return;}
+  const err=checkUsername(name);
+  if(err){toast(err,'er');return;}
+  if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()&&!currentUser.isAdmin){toast('Ce pseudo est réservé ❌','er');return;}
+  const ok=document.querySelector('#nameForm .name-ok');ok.disabled=true;
+  try{
+    const users=await getBin(CONFIG.USERS_BIN_ID);
+    const idx=users.findIndex(u=>u.id===currentUser.id);
+    if(idx===-1) throw new Error('Compte introuvable');
+    const last=users[idx].usernameChangedAt||0;
+    if(Date.now()-last<NAME_COOLDOWN){toast('Prochain changement possible dans '+fmtWait(NAME_COOLDOWN-(Date.now()-last)),'er');return;}
+    if(users.some(u=>u.id!==currentUser.id&&u.username?.toLowerCase()===name.toLowerCase())){toast('Ce pseudo est déjà pris ❌','er');return;}
+    users[idx].username=name;users[idx].usernameChangedAt=Date.now();
+    await setBin(CONFIG.USERS_BIN_ID,users);
+
+    const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
+    let changed=false;
+    for(const v of videos){
+      if(v.uploaderId===currentUser.id){v.uploader=name;changed=true;}
+      for(const c of (v.comments||[])) if(c.authorId===currentUser.id){c.author=name;changed=true;}
+    }
+    if(changed) await setBin(CONFIG.VIDEOS_BIN_ID,videos);
+
+    currentUser.username=name;saveSession(currentUser);renderHeader();
+    usersCache=null;
+    openProfileById(currentUser.id,name);
+    loadFeed();
+    toast('Pseudo modifié ! ✏️','ok');
+  }catch(e){toast('Erreur : '+e.message,'er');}
+  finally{ok.disabled=false;}
+}

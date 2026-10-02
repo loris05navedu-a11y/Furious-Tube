@@ -236,7 +236,15 @@
     <div class="profile-body">
       <div class="profile-head">
         <div>
-          <div class="profile-name" id="profName"></div>
+          <div class="profile-name-row">
+            <div class="profile-name" id="profName"></div>
+            <button class="name-edit" id="nameEditBtn" type="button" onclick="startNameEdit()" title="Modifier le nom d'utilisateur (1 fois / 24 h)" aria-label="Modifier le nom d'utilisateur" style="display:none"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.500l4 4"/></svg></button>
+          </div>
+          <form class="name-form" id="nameForm" onsubmit="event.preventDefault();saveName()" style="display:none">
+            <input type="text" id="nameInput" maxlength="20" autocomplete="off" aria-label="Nouveau nom d'utilisateur">
+            <button type="submit" class="name-ok" aria-label="Valider">✓</button>
+            <button type="button" class="name-no" onclick="cancelNameEdit()" aria-label="Annuler">✕</button>
+          </form>
           <div class="profile-since" id="profSince"></div>
         </div>
         <div class="profile-actions">

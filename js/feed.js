@@ -14,6 +14,73 @@ function sortVideos(list, mode){
   return a;
 }
 
+
+// ── Recherche approximative (accents, fautes de frappe, mots collés, lettres manquantes) ──
+const normTxt = t => (t||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+function lev(a,b){
+  const m=a.length,n=b.length;if(!m)return n;if(!n)return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){
+    const cur=[i];
+    for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[n];
+}
+function isSubseq(t,w){let i=0;for(const c of w){if(c===t[i])i++;if(i===t.length)return true;}return false;}
+function tokenScore(t,words,joined){
+  let best=0;
+  for(const w of words){
+    let sc=0;
+    if(w===t) sc=100;
+    else if(w.startsWith(t)) sc=85;
+    else if(w.includes(t)) sc=65;
+    else if(t.length>=3){
+      const allowed=Math.max(1,Math.ceil(t.length/2.5));
+      const d=Math.min(lev(t,w),lev(t,w.slice(0,t.length)));
+      if(d<=allowed) sc=Math.max(sc,48-d*8);
+      if(t.length>=3&&isSubseq(t,w)&&w.length<=t.length*2.5) sc=Math.max(sc,22);
+    }
+    if(sc>best) best=sc;
+  }
+  if(!best&&t.length>=3&&joined.includes(t)) best=50;
+  return best;
+}
+function fuzzyScore(query,fields){
+  const tokens=normTxt(query).split(' ').filter(Boolean);
+  if(!tokens.length) return 0;
+  let total=0;
+  for(const t of tokens){
+    let best=0;
+    for(const [text,weight] of fields){
+      const n=normTxt(text);if(!n) continue;
+      const sc=tokenScore(t,n.split(' '),n.replace(/ /g,''))*weight;
+      if(sc>best) best=sc;
+    }
+    if(!best) return 0;
+    total+=best;
+  }
+  return total/tokens.length;
+}
+const videoMatches=(v,q)=>fuzzyScore(q,[[v.title,1],[v.uploader,.9],[v.category,.7],[v.description||v.desc,.5]]);
+
+let usersCache=null,usersLoadedAt=0;
+async function ensureUsers(){
+  if(usersCache&&Date.now()-usersLoadedAt<60000) return;
+  try{usersCache=(await getBin(CONFIG.USERS_BIN_ID)).filter(u=>u.id&&u.username&&!u.banned);usersLoadedAt=Date.now();}
+  catch(e){usersCache=usersCache||[];}
+}
+function accountsSection(q,all){
+  const found=(usersCache||[]).map(u=>({u,sc:fuzzyScore(q,[[u.username,1]])})).filter(x=>x.sc>0).sort((a,b)=>b.sc-a.sc).slice(0,12);
+  if(!found.length) return {html:'',count:0};
+  const cards=found.map(({u})=>{
+    const n=all.filter(v=>v.uploaderId===u.id).length,subs=(u.subscribers||[]).length;
+    const av=u.avatar?`<img src="${escHtml(u.avatar)}" alt="" loading="lazy">`:escHtml(u.username[0].toUpperCase());
+    return `<div class="acc-card" data-ch="${escHtml(u.id)}" data-name="${escHtml(u.username)}"><div class="acc-av">${av}</div><div class="acc-txt"><div class="acc-name">${escHtml(u.username)}</div><div class="acc-meta">${n} vidéo${n>1?'s':''} · ${subs} abonné${subs>1?'s':''}</div></div></div>`;
+  }).join('');
+  return {count:found.length,html:`<section class="sec"><div class="sec-head"><span class="sec-ico">${ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/>')}</span><h2>Comptes</h2><span class="pill">${found.length}</span></div><div class="acc-grid">${cards}</div></section>`};
+}
+
 async function loadFeed(useCache=false){
   try{
     if(!useCache || !cachedVideos){
@@ -175,17 +242,21 @@ function homeSections(all){
 
 function renderFeed(all){
   const feed=document.getElementById('feed'),hero=document.getElementById('hero');
-  const q=searchQuery.trim().toLowerCase();
+  const q=searchQuery.trim();
   const home=!q&&activeCategory==='🏠 Accueil';
   hero.hidden=!home;
   if(home) setHeroImage(all); else clearInterval(heroTimer);
   if(!all.length){feed.innerHTML=emptyHtml();return;}
   if(home){feed.innerHTML=homeSections(all);return;}
 
-  let list,icon,title;
+  let list,icon,title,acc={html:'',count:0};
   const cat=activeCategory;
   if(q){
-    list=sortVideos(all.filter(v=>[v.title,v.uploader,v.category].some(s=>(s||'').toLowerCase().includes(q))),sortMode);
+    const scored=all.map(v=>({v,sc:videoMatches(v,q)})).filter(x=>x.sc>0);
+    const order=new Map(sortVideos(scored.map(x=>x.v),sortMode).map((v,i)=>[v.id,i]));
+    scored.sort((a,b)=>sortMode==='recent'?(b.sc-a.sc||order.get(a.v.id)-order.get(b.v.id)):(order.get(a.v.id)-order.get(b.v.id)));
+    list=scored.map(x=>x.v);
+    acc=accountsSection(q,all);
     icon=ico('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>');title='Résultats pour « '+escHtml(searchQuery.trim())+' »';
   }else{
     const [ic,...rest]=cat.split(' ');
@@ -197,12 +268,12 @@ function renderFeed(all){
     else if(cat==='🧭 Explorer') list=sortVideos(all,sortMode);
     else list=sortVideos(all.filter(v=>v.category===cat),sortMode);
   }
-  feed.innerHTML=gridSection(icon,title,list);
+  feed.innerHTML=acc.html+((list.length||!acc.count)?gridSection(icon,title,list):'');
 }
 
 // ── Recherche & tri ──
 let searchTimer;
-function onSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(()=>{searchQuery=v;loadFeed(true);},150);}
+function onSearch(v){clearTimeout(searchTimer);searchTimer=setTimeout(async()=>{searchQuery=v;if(v.trim())await ensureUsers();loadFeed(true);},150);}
 function renderSortMenu(){
   document.getElementById('sortMenu').innerHTML=SORTS.map(([k,l])=>`<button type="button" class="${k===sortMode?'on':''}" onclick="setSort('${k}')">${l}</button>`).join('');
 }
@@ -229,6 +300,8 @@ function copyVideoLink(id){
 document.addEventListener('click',e=>{
   const more=e.target.closest('.yt-card .yt-more');
   if(more){e.stopPropagation();copyVideoLink(more.closest('.yt-card').dataset.id);return;}
+  const acc=e.target.closest('.acc-card');
+  if(acc){openProfileById(acc.dataset.ch,acc.dataset.name);return;}
   const ch=e.target.closest('.yt-card [data-ch]');
   if(ch&&ch.dataset.ch){e.stopPropagation();openProfileById(ch.dataset.ch,ch.dataset.name);return;}
   const card=e.target.closest('.yt-card');

@@ -64,3 +64,14 @@
   .pv-likes{font-size:9px}
   .ban-btn,.logout-btn{padding:4px 10px;font-size:10px}
 }
+
+/* Modification du pseudo */
+.profile-name-row{display:flex;align-items:center;gap:8px;min-width:0}
+.profile-name-row .profile-name{margin-bottom:3px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.name-edit{width:28px;height:28px;border-radius:8px;border:1px solid rgba(129,140,248,.4);background:rgba(91,108,255,.14);color:#c7d0ff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .15s,border-color .15s}
+.name-edit:hover{background:rgba(91,108,255,.3);border-color:#818cf8}
+.name-form{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.name-form input{width:150px;min-width:0;background:var(--bg3);border:1px solid #818cf8;color:var(--text);padding:6px 10px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;box-shadow:0 0 0 3px rgba(99,102,241,.22)}
+.name-form button{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px}
+.name-form .name-ok{background:linear-gradient(135deg,#5b6cff,#7c4dff);border:none}
+.name-form .name-no:hover{border-color:#ff6060;color:#ff6060}
