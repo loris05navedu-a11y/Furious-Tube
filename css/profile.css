@@ -75,3 +75,18 @@
 .name-form button{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px}
 .name-form .name-ok{background:linear-gradient(135deg,#5b6cff,#7c4dff);border:none}
 .name-form .name-no:hover{border-color:#ff6060;color:#ff6060}
+
+/* Badge admin */
+.prof-crown{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;padding:2px 8px 2px 5px;border-radius:99px;background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);color:#fcd34d;font-size:11px;font-weight:700;letter-spacing:.3px;filter:drop-shadow(0 0 6px rgba(251,191,36,.35))}
+.admin-pending{margin:12px 0 4px;padding:12px;border-radius:10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.35);font-size:12px}
+.admin-pending b{color:#fcd34d}
+.admin-pending p{color:var(--muted);margin:6px 0 10px;line-height:1.5}
+.ap-btns{display:flex;gap:8px;flex-wrap:wrap}
+.ap-btns button{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer}
+.ap-btns button.on{background:linear-gradient(135deg,#5b6cff,#7c4dff);border:none;color:#fff}
+.profile-head{gap:10px}
+.profile-head>div:first-child{min-width:0;flex:1}
+.profile-name-row{flex-wrap:wrap;row-gap:4px}
+.profile-name-row .profile-name{white-space:normal;word-break:break-word}
+.profile-box{max-width:460px}
+.logout-btn,.ban-btn{white-space:nowrap}

@@ -30,17 +30,20 @@ const ADMIN_USERNAME = 'furious shorter'; // pseudo réservé (interdit aux non-
 
 const CATEGORIES = ['🏠 Accueil','✨ Pour toi','🎮 Jeux','😂 Divertissement','🎵 Musique','🏆 Sport','🎨 Art & Créativité','🍳 Cuisine','✈️ Voyage','🔬 Science & Tech','💃 Danse','🐾 Animaux','📚 Éducation','🎭 Autre'];
 
+// Mots réservés à l'équipe : autorisés pour les admins uniquement
+const STAFF_USERNAMES = ['admin','moderator','support','staff','official','furioustubes','system'];
 const BANNED_USERNAMES = [
-  'admin','moderator','support','staff','official','furioustubes','system',
   'porno','porn','sex','nude','nazi','nigger','hitler','terrorist',
   'fuck','shit','bitch','asshole','cunt','dick','pussy','cock',
 ];
 
-function checkUsername(name) {
+function checkUsername(name, isAdmin=false) {
   if(name.length < 3) return 'Pseudo trop court (min. 3 caractères)';
   if(name.length > 20) return 'Pseudo trop long (max. 20 caractères)';
   if(!/^[a-zA-Z0-9_. -]+$/.test(name)) return 'Pseudo invalide';
-  if(BANNED_USERNAMES.some(w=>name.toLowerCase().includes(w))) return "Ce pseudo n'est pas autorisé ❌";
+  const low=name.toLowerCase();
+  if(BANNED_USERNAMES.some(w=>low.includes(w))) return "Ce pseudo n'est pas autorisé ❌";
+  if(!isAdmin&&STAFF_USERNAMES.some(w=>low.includes(w))) return 'Ce pseudo est réservé aux admins ❌';
   return null;
 }
 

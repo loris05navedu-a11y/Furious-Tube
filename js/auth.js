@@ -66,16 +66,43 @@ async function ensureProfile(fbUser,pseudo){
     user={id:fbUser.uid,username:name,date:Date.now(),timeOnSite:0,banned:false};
     await setBin(CONFIG.USERS_BIN_ID,[...users.filter(u=>u.id),user]);
   }
-  if(isAdminFbUser(fbUser)&&!user.admin){
-    user.admin=true;
+  const admin=isAdminFbUser(fbUser);
+  if(!!user.admin!==admin){
+    user.admin=admin;
     try{
       const all=await getBin(CONFIG.USERS_BIN_ID);
       const i=all.findIndex(u=>u.id===user.id);
-      if(i>=0){all[i].admin=true;await setBin(CONFIG.USERS_BIN_ID,all);}
+      if(i>=0){all[i].admin=admin;await setBin(CONFIG.USERS_BIN_ID,all);}
     }catch(e){}
   }
   return user;
 }
+
+// Compte admin dont l'e-mail n'est pas encore vérifié
+function adminPending(){
+  const u=fbAuth&&fbAuth.currentUser;
+  return !!u&&isAdminEmail(u.email)&&!u.emailVerified;
+}
+// Relit l'état de vérification de l'e-mail et active le mode admin si c'est fait
+async function refreshAdmin(silent){
+  const u=fbAuth&&fbAuth.currentUser;
+  if(!u||!isAdminEmail(u.email)) return false;
+  try{await u.reload();await u.getIdToken(true);}catch(e){}
+  const fresh=fbAuth.currentUser;
+  if(!fresh.emailVerified){if(!silent)toast("E-mail pas encore vérifié : cliquez le lien reçu (pensez aux spams)",'er');return false;}
+  if(currentUser&&currentUser.isAdmin) return true;
+  const user=await ensureProfile(fresh);
+  finishLogin(user,fresh);
+  toast('👑 Mode admin activé !','ok');
+  return true;
+}
+async function resendAdminVerification(){
+  const u=fbAuth&&fbAuth.currentUser;if(!u) return;
+  try{await u.sendEmailVerification();toast('📧 E-mail de vérification envoyé (pensez aux spams)','ok');}
+  catch(e){toast(e.code==='auth/too-many-requests'?'Trop de demandes, réessayez dans quelques minutes':authErrorMsg(e),'er');}
+}
+// Retour sur l'onglet après avoir cliqué le lien de vérification
+window.addEventListener('focus',()=>{if(adminPending()) refreshAdmin(true).then(ok=>{if(ok&&viewingProfileId)openProfileById(currentUser.id,currentUser.username);});});
 
 // E-mail de vérification (obligatoire pour être reconnu admin)
 async function verifyAdminEmail(fbUser){
@@ -91,7 +118,7 @@ async function doRegister(){
   const email=document.getElementById('rEmail').value.trim();
   const pass=document.getElementById('rPass').value;
 
-  const usernameError=checkUsername(name);
+  const usernameError=checkUsername(name,isAdminEmail(email));
   if(usernameError) return showAuthErr(usernameError);
   if(!email) return showAuthErr('Entrez votre adresse e-mail');
   if(pass.length<6) return showAuthErr('Mot de passe trop court (min. 6 caractères)');

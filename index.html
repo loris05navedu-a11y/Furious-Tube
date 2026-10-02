@@ -238,6 +238,7 @@
         <div>
           <div class="profile-name-row">
             <div class="profile-name" id="profName"></div>
+            <span class="prof-crown" id="profCrown" title="Administrateur" style="display:none"><svg viewBox="0 0 24 24" width="20" height="20" aria-label="Administrateur"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z" fill="#fbbf24" stroke="#f59e0b" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="5" r="1.4" fill="#fde68a"/><circle cx="3" cy="8" r="1.2" fill="#fde68a"/><circle cx="21" cy="8" r="1.2" fill="#fde68a"/></svg>Admin</span>
             <button class="name-edit" id="nameEditBtn" type="button" onclick="startNameEdit()" title="Modifier le nom d'utilisateur (1 fois / 24 h)" aria-label="Modifier le nom d'utilisateur" style="display:none"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.500l4 4"/></svg></button>
           </div>
           <form class="name-form" id="nameForm" onsubmit="event.preventDefault();saveName()" style="display:none">
@@ -252,6 +253,11 @@
           <button class="logout-btn" id="logoutBtn" onclick="closeProfile();doLogout()" style="display:none">↪ Déconnexion</button>
           <button class="x" style="position:static" onclick="closeProfile()">✕</button>
         </div>
+      </div>
+      <div class="admin-pending" id="adminPending" style="display:none">
+        <b>👑 Mode admin en attente</b>
+        <p>Votre adresse fait partie des admins, mais elle n'est pas encore vérifiée. Cliquez le lien reçu par e-mail (pensez aux spams), puis revenez ici.</p>
+        <div class="ap-btns"><button type="button" onclick="resendAdminVerification()">Renvoyer l'e-mail</button><button type="button" class="on" onclick="refreshAdmin().then(ok=>ok&&openProfileById(currentUser.id,currentUser.username))">J'ai vérifié</button></div>
       </div>
       <div class="profile-stats">
         <div class="stat-box"><div class="stat-num" id="profSubs">0</div><div class="stat-label">Abonnés</div></div>

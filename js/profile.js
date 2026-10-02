@@ -23,6 +23,9 @@ async function openProfileById(uid,uname){
   document.getElementById('profName').textContent=uname||'';
   cancelNameEdit();
   const nb=document.getElementById('nameEditBtn');if(nb) nb.style.display=isMe?'':'none';
+  const crown=document.getElementById('profCrown');
+  crown.style.display=(isMe&&currentUser.isAdmin)?'':'none';
+  document.getElementById('adminPending').style.display=(isMe&&adminPending())?'':'none';
   document.getElementById('profSince').textContent='Chargement...';
   document.getElementById('profSubs').textContent='—';
   document.getElementById('profVids').textContent='—';
@@ -50,6 +53,8 @@ async function openProfileById(uid,uname){
       img.style.display='none'; initial.style.display='';
     }
 
+    if(isMe) crown.style.display=currentUser.isAdmin?'':'none';
+    else if(user?.admin) crown.style.display='';
     const subs=user?.subscribers?.length||0;
     const since=user?.date?Math.floor((Date.now()-user.date)/(86400000)):0;
     const mins=user?.timeOnSite||0;
@@ -161,7 +166,7 @@ async function saveName(){
   if(!currentUser) return;
   const name=document.getElementById('nameInput').value.trim();
   if(name===currentUser.username){cancelNameEdit();return;}
-  const err=checkUsername(name);
+  const err=checkUsername(name,!!currentUser.isAdmin);
   if(err){toast(err,'er');return;}
   if(name.toLowerCase()===ADMIN_USERNAME.toLowerCase()&&!currentUser.isAdmin){toast('Ce pseudo est réservé ❌','er');return;}
   const ok=document.querySelector('#nameForm .name-ok');ok.disabled=true;
