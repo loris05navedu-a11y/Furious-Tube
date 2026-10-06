@@ -12,7 +12,8 @@ function openPlayer(v){
   document.title=v.title+' — FuriousTubes';
   document.getElementById('pcat').textContent=v.category||'';
   document.getElementById('pcat').style.display=v.category?'':'none';
-  document.getElementById('pstats').textContent=fmtCount((v.likes||[]).length)+' J’aime · '+fmtAgo(v.date);
+  document.getElementById('pstats').textContent=fmtViews(v)+' · '+fmtCount((v.likes||[]).length)+' J’aime · '+fmtAgo(v.date);
+  countView(v);
   document.getElementById('pdate').textContent=v.date?'· '+fmtDate(v.date):'';
   const av=document.getElementById('pav');
   if(v.uploaderAvatar){av.innerHTML='<img alt="">';av.querySelector('img').src=v.uploaderAvatar;}

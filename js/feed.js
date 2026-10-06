@@ -1,14 +1,36 @@
 /* FuriousTubes — fil de vidéos, sections façon YouTube & algorithme "Pour toi" */
 let cachedVideos = null;
 let searchQuery = '', sortMode = 'recent';
-const SORTS = [['recent','Plus récentes'],['liked','Plus aimées'],['commented','Plus commentées']];
+const SORTS = [['recent','Plus récentes'],['viewed','Plus vues'],['liked','Plus aimées'],['commented','Plus commentées']];
 
 const nLikes = v => (v.likes||[]).length;
 const nComments = v => (v.comments||[]).length;
+const nViews = v => v.views||0;
+const fmtViews = v => { const n=nViews(v); return fmtCount(n)+(n>1?' vues':' vue'); };
+
+// Une vue par vidéo et par navigateur toutes les 30 min (pas pour l'auteur)
+function countView(v){
+  if(currentUser&&currentUser.id===v.uploaderId) return;
+  let seen={};try{seen=JSON.parse(localStorage.getItem('ft_views')||'{}');}catch(e){}
+  const now=Date.now();
+  if(seen[v.id]&&now-seen[v.id]<30*60*1000) return;
+  seen[v.id]=now;
+  try{localStorage.setItem('ft_views',JSON.stringify(seen));}catch(e){}
+  v.views=nViews(v)+1;
+  const ps=document.getElementById('pstats');
+  if(ps&&curId===v.id) ps.textContent=ps.textContent.replace(/^[^·]*/,fmtViews(v)+' ');
+  getBin(CONFIG.VIDEOS_BIN_ID).then(list=>{
+    const i=list.findIndex(x=>x.id===v.id);if(i===-1) return;
+    list[i].views=nViews(list[i])+1;
+    return setBin(CONFIG.VIDEOS_BIN_ID,list);
+  }).catch(()=>{});
+}
 
 function sortVideos(list, mode){
   const a = [...list];
-  if(mode==='liked') a.sort((x,y)=>nLikes(y)-nLikes(x)||y.date-x.date);
+  if(mode==='trending'){const sc=v=>nViews(v)+nLikes(v)*5+nComments(v)*3;a.sort((x,y)=>sc(y)-sc(x)||y.date-x.date);}
+  else if(mode==='viewed') a.sort((x,y)=>nViews(y)-nViews(x)||y.date-x.date);
+  else if(mode==='liked') a.sort((x,y)=>nLikes(y)-nLikes(x)||y.date-x.date);
   else if(mode==='commented') a.sort((x,y)=>nComments(y)-nComments(x)||y.date-x.date);
   else a.sort((x,y)=>y.date-x.date);
   return a;
@@ -152,7 +174,7 @@ function videoCardHtml(v){
           <div class="yt-av" data-ch="${escHtml(v.uploaderId||'')}" data-name="${name}">${av}</div>
           <div class="yt-text">
             <div class="yt-ch" data-ch="${escHtml(v.uploaderId||'')}" data-name="${name}">${name}</div>
-            <div class="yt-meta">${fmtAgo(v.date)}</div>
+            <div class="yt-meta">${fmtViews(v)} · ${fmtAgo(v.date)}</div>
           </div>
         </div>
         <div class="yt-stats">
@@ -232,7 +254,7 @@ function homeSections(all){
   const n=perRow();lastPerRow=n;
   const shown=new Set();
   const take=list=>{const out=list.filter(v=>!shown.has(v.id)).slice(0,n);out.forEach(v=>shown.add(v.id));return out;};
-  const trending=take(sortVideos(all,'liked'));
+  const trending=take(sortVideos(all,'trending'));
   const reco=take(getPersonalizedFeed(all));
   const fresh=take(sortVideos(all,'recent'));
   return rowSection(SEC_ICO.fire,'Tendances',trending,'🔥 Tendances',n)
@@ -262,7 +284,7 @@ function renderFeed(all){
     const [ic,...rest]=cat.split(' ');
     icon=ICONS[cat]||ic;title=escHtml(rest.join(' '));
     if(cat==='✨ Pour toi') list=getPersonalizedFeed(all);
-    else if(cat==='🔥 Tendances') list=sortVideos(all,'liked');
+    else if(cat==='🔥 Tendances') list=sortVideos(all,'trending');
     else if(cat==='📁 Mes vidéos') list=sortVideos(all.filter(v=>currentUser&&v.uploaderId===currentUser.id),sortMode);
     else if(cat==='❤️ Favoris') list=sortVideos(all.filter(v=>currentUser&&(v.likes||[]).includes(currentUser.id)),sortMode);
     else if(cat==='🧭 Explorer') list=sortVideos(all,sortMode);
