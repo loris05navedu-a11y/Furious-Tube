@@ -137,7 +137,7 @@ document.getElementById('avatarFileInput').addEventListener('change',async e=>{
     let changed=false;
     for(const v of videos){
       if(v.uploaderId===currentUser.id){v.uploaderAvatar=avatarUrl;changed=true;}
-      if(v.comments){
+      if(v.comments&&!DATA_V2){
         for(const c of v.comments){
           if(c.authorId===currentUser.id){c.authorAvatar=avatarUrl;changed=true;}
         }
@@ -200,7 +200,7 @@ async function saveName(){
     let changed=false;
     for(const v of videos){
       if(v.uploaderId===currentUser.id){v.uploader=name;changed=true;}
-      for(const c of (v.comments||[])) if(c.authorId===currentUser.id){c.author=name;changed=true;}
+      if(!DATA_V2) for(const c of (v.comments||[])) if(c.authorId===currentUser.id){c.author=name;changed=true;}
     }
     if(changed) await setBin(CONFIG.VIDEOS_BIN_ID,videos);
 

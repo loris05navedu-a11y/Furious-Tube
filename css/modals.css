@@ -75,3 +75,9 @@
 .adm-btns button:hover{border-color:var(--fire)}
 .adm-btns .danger{color:#ff6060;border-color:rgba(255,60,60,.3)}
 .adm-tag{display:inline-block;background:rgba(255,150,0,.15);color:#ffaa00;border-radius:4px;padding:1px 6px;font-size:10px;margin-left:5px}
+
+.adm-data{margin-top:16px;padding:12px;border-radius:10px;background:rgba(91,108,255,.08);border:1px solid rgba(129,140,248,.35);font-size:12px}
+.adm-data p{color:var(--muted);margin:6px 0 10px;line-height:1.5}
+.adm-data code{background:var(--bg3);padding:1px 5px;border-radius:4px}
+.adm-data button{padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer}
+.adm-data button.on{background:linear-gradient(135deg,#5b6cff,#7c4dff);border:none;color:#fff}

@@ -2,7 +2,7 @@
 loadSession();
 renderHeader();
 renderCats();
-loadFeed().then(openFromUrl);
+initDataLayer().then(()=>loadFeed()).then(openFromUrl);
 if(currentUser) startTimeTracking();
 watchAuth();   // Firebase : restaure / valide la session
 

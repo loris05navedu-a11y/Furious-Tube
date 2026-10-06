@@ -62,8 +62,30 @@ Les e-mails admin sont listés dans `ADMIN_EMAILS` (`js/config.js`). Un compte n
 (un e-mail de vérification est envoyé à l'inscription / à la connexion). Les admins ont : suppression et masquage de n'importe quelle
 vidéo, suppression de commentaires, bannissement, et un panneau « 👑 Admin » (vidéos + utilisateurs).
 
+## Membres du staff
+
+Les admins nomment des membres du staff (profil → « 🦺 Staff », durée au choix ou indéfinie). Même outils de modération qu'un admin,
+avec des limites : bannissement de 2 h maximum, changement de pseudo toutes les 4 h (24 h pour les autres, aucune limite pour les admins),
+pas de nomination de staff, pas de sanction contre un admin ou un autre staff.
+
+## 🔒 Base de données sécurisée (v2)
+
+Par défaut le site utilise l'ancienne base (deux documents partagés `bins/users` et `bins/videos`), que tout compte connecté peut modifier.
+La v2 stocke un document par profil (`users/<uid>`) et par vidéo (`videos/<id>`) et **fait vérifier les droits par Firestore** :
+admin (e-mails vérifiés), staff, propriétaire, délai des pseudos, bans de 2 h, likes / vues / commentaires limités à leur auteur.
+
+Passer en v2 (une seule fois, par un admin) :
+
+1. Console Firebase → Firestore → **Règles** : coller le contenu de `firestore.rules` → **Publier**
+   (les règles gèrent les deux modes ; les e-mails admin y sont dupliqués depuis `ADMIN_EMAILS` : gardez-les identiques).
+2. Sur le site, connecté en admin : **👑 Admin → bouton « Migrer vers la base sécurisée »**. Les profils et vidéos sont copiés,
+   puis le mode v2 est activé pour tout le monde (les visiteurs déjà connectés rechargent la page).
+3. Retour possible depuis le même panneau (« Revenir à l'ancienne base ») ; les anciennes données restent intactes.
+
+Les règles et la couche de données sont testées avec les émulateurs Firebase : voir `tests/README.md`.
+
 ## ⚠️ Sécurité
 
 La clé web Firebase est publique par conception. En revanche le secret Sightengine de `js/config.js` est visible de tous :
-faites-le régénérer si besoin. Les règles Firestore limitent l'écriture aux comptes connectés, mais tout compte connecté
-peut encore modifier le document partagé : pour une vraie sécurité, il faudrait des documents par vidéo / par utilisateur.
+faites-le régénérer si besoin. Tant que la migration v2 n'est pas faite, les règles Firestore limitent seulement l'écriture aux
+comptes connectés : tout compte connecté peut modifier le document partagé.

@@ -1,10 +1,205 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Lecture publique (le fil de vidéos est visible sans compte), écriture réservée aux comptes connectés
+
+    // ───────── Rôles ─────────
+    // Admins : mêmes e-mails que ADMIN_EMAILS dans js/config.js (e-mail vérifié obligatoire).
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.get('email_verified', false) == true
+        && request.auth.token.get('email', '').lower() in [
+          'thaodubois005@gmail.com',
+          'loris05.nav@gmail.com',
+          'loris05.nav.edu@gmail.com'
+        ];
+    }
+    function userDoc(uid) { return get(/databases/$(database)/documents/users/$(uid)).data; }
+    function nowMs() { return request.time.toMillis(); }
+    // Staff actif : champ staff = { until: <ms> | null } sur le profil, posé par un admin.
+    function staffActive(rec) {
+      return rec.get('staff', null) != null
+        && (rec.staff.get('until', null) == null || rec.staff.until > nowMs());
+    }
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && staffActive(userDoc(request.auth.uid));
+    }
+    function isMod() { return isAdmin() || isStaff(); }
+
+    // Migration terminée : config/app = { dataV2: true } -> les anciens "bins" deviennent en lecture seule.
+    function v2Active() {
+      return exists(/databases/$(database)/documents/config/app)
+        && get(/databases/$(database)/documents/config/app).data.get('dataV2', false) == true;
+    }
+
+    // ───────── Anciennes données (v1) ─────────
     match /bins/{binId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null && !v2Active();
+    }
+
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ───────── Profils ─────────
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isAdmin() || (request.auth != null && request.auth.uid == uid && validNewUser(uid));
+      allow update: if isAdmin() || selfUpdate(uid) || subscribeUpdate(uid) || staffBan(uid);
+      allow delete: if false;
+
+      function reservedName(name) {
+        return name.lower() == 'furious shorter'
+          || name.lower().matches('.*(admin|moderator|support|staff|official|furioustubes|system).*');
+      }
+      function validName(name) {
+        return name is string && name.size() >= 3 && name.size() <= 20
+          && name.matches('^[a-zA-Z0-9_. -]+$')
+          && !reservedName(name);
+      }
+      function validNewUser(uid) {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['id', 'username', 'date', 'timeOnSite', 'banned', 'admin', 'avatar', 'subscribers'])
+          && d.get('id', uid) == uid
+          && validName(d.username)
+          && d.get('banned', false) == false
+          && (d.get('admin', false) == false || isAdmin())
+          && d.get('subscribers', []).size() == 0;
+      }
+      function nameCooldown() {
+        return isAdmin() ? 0 : (isStaff() ? 4 * 3600000 : 24 * 3600000) - 300000;
+      }
+      function nameChangeOk(a, b) {
+        return validName(a.username)
+          && a.usernameChangedAt is number
+          && (nowMs() - a.usernameChangedAt) < 300000 && (a.usernameChangedAt - nowMs()) < 300000
+          && nowMs() - b.get('usernameChangedAt', 0) >= nameCooldown();
+      }
+      function selfUpdate(uid) {
+        let a = request.resource.data;
+        let b = resource.data;
+        let c = a.diff(b).affectedKeys();
+        return request.auth != null && request.auth.uid == uid
+          && c.hasOnly(['avatar', 'timeOnSite', 'admin', 'banned', 'bannedUntil', 'username', 'usernameChangedAt'])
+          && (!c.hasAny(['timeOnSite'])
+              || (a.timeOnSite >= b.get('timeOnSite', 0) && a.timeOnSite <= b.get('timeOnSite', 0) + 10))
+          && (!c.hasAny(['admin']) || a.get('admin', false) == isAdmin())
+          && (!c.hasAny(['banned', 'bannedUntil'])
+              || (a.get('banned', false) == false && b.get('bannedUntil', null) != null && b.bannedUntil < nowMs()))
+          && (!c.hasAny(['username', 'usernameChangedAt']) || nameChangeOk(a, b));
+      }
+      // Abonnement : chacun n'ajoute / retire que son propre uid dans la liste d'abonnés
+      function subscribeUpdate(uid) {
+        let a = request.resource.data;
+        let b = resource.data;
+        let o = b.get('subscribers', []);
+        let n = a.get('subscribers', []);
+        return request.auth != null
+          && a.diff(b).affectedKeys().hasOnly(['subscribers'])
+          && n.toSet().difference(o.toSet()).hasOnly([request.auth.uid])
+          && o.toSet().difference(n.toSet()).hasOnly([request.auth.uid])
+          && n.size() <= o.size() + 1 && n.size() >= o.size() - 1;
+      }
+      // Staff : bannit 2 h maximum (ni admin, ni autre staff, ni soi-même) ; ne lève que les bans temporaires
+      function staffBan(uid) {
+        let a = request.resource.data;
+        let b = resource.data;
+        return isStaff()
+          && uid != request.auth.uid
+          && a.diff(b).affectedKeys().hasOnly(['banned', 'bannedUntil'])
+          && b.get('admin', false) == false
+          && !staffActive(b)
+          && (
+            (a.get('banned', false) == true && a.bannedUntil is number
+              && a.bannedUntil > nowMs() && a.bannedUntil <= nowMs() + 7200000 + 300000)
+            || (a.get('banned', false) == false && b.get('bannedUntil', null) != null)
+          );
+      }
+    }
+
+    // ───────── Vidéos ─────────
+    match /videos/{vid} {
+      allow read: if true;
+      allow create: if isAdmin() || (request.auth != null && validNewVideo(vid));
+      allow update: if isAdmin() || modUpdate() || ownerMeta() || likeUpdate() || viewUpdate()
+                    || commentUpdate() || reportUpdate();
+      allow delete: if isMod() || (request.auth != null && resource.data.uploaderId == request.auth.uid);
+
+      function validNewVideo(vid) {
+        let d = request.resource.data;
+        return d.keys().hasOnly(['id', 'title', 'category', 'uploader', 'uploaderId', 'uploaderAvatar', 'url', 'thumb',
+                                 'duration', 'date', 'likes', 'dislikes', 'comments', 'reports', 'views', 'hidden', 'lastComment'])
+          && d.get('id', vid) == vid
+          && d.uploaderId == request.auth.uid
+          && d.title is string && d.title.size() >= 1 && d.title.size() <= 120
+          && d.uploader == userDoc(request.auth.uid).username
+          && d.get('likes', []).size() == 0 && d.get('dislikes', []).size() == 0
+          && d.get('reports', []).size() == 0 && d.get('comments', {}).size() == 0
+          && d.get('views', 0) == 0 && d.get('hidden', false) == false;
+      }
+      // Staff : masquer / rétablir, supprimer des commentaires
+      function modUpdate() {
+        return isStaff()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['hidden', 'reports', 'comments', 'lastComment']);
+      }
+      // L'auteur met à jour son nom / sa photo affichés sur ses vidéos
+      function ownerMeta() {
+        return request.auth != null && resource.data.uploaderId == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['uploader', 'uploaderAvatar']);
+      }
+      function onlyMine(o, n) {
+        return n.toSet().difference(o.toSet()).hasOnly([request.auth.uid])
+          && o.toSet().difference(n.toSet()).hasOnly([request.auth.uid])
+          && n.size() <= o.size() + 1 && n.size() >= o.size() - 1;
+      }
+      function likeUpdate() {
+        let a = request.resource.data;
+        let b = resource.data;
+        return request.auth != null
+          && a.diff(b).affectedKeys().hasOnly(['likes', 'dislikes'])
+          && onlyMine(b.get('likes', []), a.get('likes', []))
+          && onlyMine(b.get('dislikes', []), a.get('dislikes', []));
+      }
+      function viewUpdate() {
+        return request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views'])
+          && request.resource.data.views == resource.data.get('views', 0) + 1;
+      }
+      // Commentaires (map id -> commentaire) : une seule entrée ajoutée ou retirée, désignée par lastComment.
+      // Les ids sont de la forme c_<uid>_<date> : seul leur auteur peut les supprimer (hors modération).
+      function commentUpdate() {
+        let a = request.resource.data;
+        let b = resource.data;
+        let hint = a.get('lastComment', '');
+        let o = b.get('comments', {});
+        let n = a.get('comments', {});
+        let keys = n.diff(o).affectedKeys();
+        return request.auth != null
+          && a.diff(b).affectedKeys().hasOnly(['comments', 'lastComment'])
+          && keys.size() == 1 && keys.hasOnly([hint])
+          && hint.matches('^c_' + request.auth.uid + '_[0-9]+$')
+          && (
+            (!(hint in o) && hint in n && n[hint].authorId == request.auth.uid
+              && n[hint].author == userDoc(request.auth.uid).username
+              && n[hint].text is string && n[hint].text.size() <= 600)
+            || (hint in o && !(hint in n))
+          );
+      }
+      function reportUpdate() {
+        let a = request.resource.data;
+        let b = resource.data;
+        let o = b.get('reports', []);
+        let n = a.get('reports', []);
+        return request.auth != null
+          && a.diff(b).affectedKeys().hasOnly(['reports', 'hidden'])
+          && n.toSet().difference(o.toSet()).hasOnly([request.auth.uid])
+          && o.toSet().difference(n.toSet()).size() == 0
+          && n.size() <= o.size() + 1
+          && (a.get('hidden', false) == b.get('hidden', false) || (a.hidden == true && n.size() >= 3));
+      }
     }
 
     // WhatQuiz : sauvegarde des comptes (quiz, parties, banque, historique, fichiers), synchronisée entre le site

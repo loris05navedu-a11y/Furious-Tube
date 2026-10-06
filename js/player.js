@@ -36,6 +36,7 @@ function openPlayer(v){
   getBin(CONFIG.USERS_BIN_ID).then(users=>{
     if(curId!==v.id)return;
     updateSubUI(users.find(u=>u.id===v.uploaderId));
+    renderComments(v.comments||[]);
   }).catch(()=>{});
 
   if(urlVideoId()!==v.id){
