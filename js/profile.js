@@ -66,6 +66,19 @@ async function openProfileById(uid,uname){
     document.getElementById('profVids').textContent=uvideos.length;
     document.getElementById('profTime').textContent=hours>0?hours+'h':(mins>0?`${mins}min`:'0min');
 
+    // Creator stats for their own profile
+    const csec=document.getElementById('creatorStats');
+    if(isMe && uvideos.length > 0) {
+      const stats=getCreatorStats(uid,videos);
+      document.getElementById('statViews').textContent=fmtCount(stats.totalViews);
+      document.getElementById('statLikes').textContent=fmtCount(stats.totalLikes);
+      document.getElementById('statComments').textContent=fmtCount(stats.totalComments);
+      document.getElementById('statEngagement').textContent=stats.engagementRate.toFixed(1)+'%';
+      csec.style.display='';
+    } else {
+      csec.style.display='none';
+    }
+
     // Boutons de modération : admin = tout ; staff = pas d'admin ni de staff, et pas de levée d'un ban définitif
     const banBtn=document.getElementById('banBtn'),staffBtn=document.getElementById('staffBtn');
     const isAdmin=!!(currentUser&&currentUser.isAdmin),mod=canModerate();

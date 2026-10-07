@@ -38,6 +38,7 @@ async function sendComment(){
   const newComment={id:'c_'+currentUser.id+'_'+Date.now(),author:currentUser.username,authorId:currentUser.id,authorAvatar:currentUser.avatar||null,text,date:Date.now()};
 
   try{
+    recordActivity('comment', curId);
     const videos=await getBin(CONFIG.VIDEOS_BIN_ID);
     const idx=videos.findIndex(v=>v.id===curId);if(idx===-1)return;
     videos[idx].comments=videos[idx].comments||[];

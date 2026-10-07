@@ -284,6 +284,15 @@
         <div class="stat-box"><div class="stat-num" id="profVids">0</div><div class="stat-label">Vidéos</div></div>
         <div class="stat-box"><div class="stat-num" id="profTime">0h</div><div class="stat-label">Sur le site</div></div>
       </div>
+      <div id="creatorStats" style="display:none">
+        <h4 style="margin-top:20px;margin-bottom:12px;font-size:14px;color:var(--text)">📊 Analytics créateur</h4>
+        <div class="profile-stats" style="grid-template-columns:repeat(2,1fr);gap:8px">
+          <div class="stat-box"><div class="stat-num" id="statViews">0</div><div class="stat-label">Vues totales</div></div>
+          <div class="stat-box"><div class="stat-num" id="statLikes">0</div><div class="stat-label">J'aime totaux</div></div>
+          <div class="stat-box"><div class="stat-num" id="statComments">0</div><div class="stat-label">Commentaires</div></div>
+          <div class="stat-box"><div class="stat-num" id="statEngagement">0%</div><div class="stat-label">Engagement</div></div>
+        </div>
+      </div>
       <div class="profile-videos">
         <h4>Ses vidéos</h4>
         <div class="pv-list" id="profVideoList"></div>
@@ -553,6 +562,7 @@
 <script src="js/moderation.js"></script>
 <script src="js/admin.js"></script>
 <script src="js/profile.js"></script>
+<script src="js/retention.js"></script>
 <script src="js/music.js"></script>
 
 <!-- Furious Maker -->

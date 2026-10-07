@@ -159,6 +159,7 @@ function videoCardHtml(v){
   const av=v.uploaderAvatar
     ?`<img src="${escHtml(v.uploaderAvatar)}" alt="" loading="lazy">`
     :escHtml((v.uploader||'?')[0].toUpperCase());
+  const fav=isFavorite(v.id);
   return `
     <article class="yt-card" data-id="${id}">
       <div class="yt-thumb">
@@ -167,6 +168,7 @@ function videoCardHtml(v){
           :`<video class="yt-poster" src="${escHtml(v.url)}#t=1" preload="metadata" muted playsinline></video>`}
         ${v.duration?`<span class="yt-dur">${fmt(v.duration)}</span>`:''}
         <div class="yt-prog"></div>
+        <button class="yt-fav" type="button" onclick="event.stopPropagation();toggleFavorite('${id}')" title="${fav?'Retirer des favoris':'Ajouter aux favoris'}" data-fav="${fav?'1':'0'}" aria-label="Favoris">${fav?'❤️':'🤍'}</button>
       </div>
       <div class="yt-body">
         <h3 class="yt-title" title="${escHtml(v.title)}">${escHtml(v.title)}</h3>
@@ -254,12 +256,33 @@ function homeSections(all){
   const n=perRow();lastPerRow=n;
   const shown=new Set();
   const take=list=>{const out=list.filter(v=>!shown.has(v.id)).slice(0,n);out.forEach(v=>shown.add(v.id));return out;};
+
+  let html = '';
+
+  // Watch history
+  if(currentUser) {
+    const hist = getWatchHistory(all).slice(0, n);
+    if(hist.length > 0) {
+      html += rowSection(ico('<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5.67-1.5 1.5-1.5 1.5.67 1.5 1.5zM8 11.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>'),'Continuer à regarder',hist,'⏱️ Continuer',n);
+    }
+  }
+
   const trending=take(sortVideos(all,'trending'));
   const reco=take(getPersonalizedFeed(all));
   const fresh=take(sortVideos(all,'recent'));
-  return rowSection(SEC_ICO.fire,'Tendances',trending,'🔥 Tendances',n)
+  html += rowSection(SEC_ICO.fire,'Tendances',trending,'🔥 Tendances',n)
     +rowSection(SEC_ICO.star,'Vidéos recommandées',reco,'✨ Pour toi',n)
     +rowSection(SEC_ICO.fresh,'Nouveautés',fresh,'🧭 Explorer',n);
+
+  // Favorites
+  if(currentUser) {
+    const favs = getFavorites(all).slice(0, n);
+    if(favs.length > 0) {
+      html += rowSection(ico('<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>'),'Vos favoris',favs,'❤️ Favoris',n);
+    }
+  }
+
+  return html;
 }
 
 function renderFeed(all){
@@ -286,7 +309,8 @@ function renderFeed(all){
     if(cat==='✨ Pour toi') list=getPersonalizedFeed(all);
     else if(cat==='🔥 Tendances') list=sortVideos(all,'trending');
     else if(cat==='📁 Mes vidéos') list=sortVideos(all.filter(v=>currentUser&&v.uploaderId===currentUser.id),sortMode);
-    else if(cat==='❤️ Favoris') list=sortVideos(all.filter(v=>currentUser&&(v.likes||[]).includes(currentUser.id)),sortMode);
+    else if(cat==='⏱️ Continuer') list=sortVideos(getWatchHistory(all).reverse(),sortMode);
+    else if(cat==='❤️ Favoris') list=sortVideos(getFavorites(all),sortMode);
     else if(cat==='🧭 Explorer') list=sortVideos(all,sortMode);
     else list=sortVideos(all.filter(v=>v.category===cat),sortMode);
   }

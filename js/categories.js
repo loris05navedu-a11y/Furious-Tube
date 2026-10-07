@@ -10,6 +10,7 @@ const ICONS = {
   '🔥 Tendances': ico('<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 .8 3 2 3 0-3-1-5.5 1-8.5z"/>'),
   '📁 Mes vidéos': ico('<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/>'),
   '❤️ Favoris': ico('<path d="M12 20s-7.5-4.6-9.3-9.2A5 5 0 0 1 12 7.6a5 5 0 0 1 9.3 3.2C19.5 15.4 12 20 12 20z"/>'),
+  '⏱️ Continuer': ico('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-width="2" fill="none"/><path d="M1 12a11 11 0 0 1 22 0 11 11 0 0 1-22 0" fill="none" stroke-width="1.5"/>'),
   '🎲 Surprise': ico('<rect x="4" y="4" width="16" height="16" rx="3.5"/>'+DOTS([[9,9],[15,9],[9,15],[15,15]])),
   '🎮 Jeux': ico('<path d="M7 8h10a4 4 0 0 1 4 4v1.5a2.8 2.8 0 0 1-5 1.7L14.5 14h-5l-1.5 1.2A2.8 2.8 0 0 1 3 13.500V12a4 4 0 0 1 4-4z"/><path d="M8 10.500v3M6.5 12h3"/>'+DOTS([[16,11],[18,13]])),
   '😂 Divertissement': ico('<circle cx="12" cy="12" r="9"/><path d="M8 14c1 2.2 7 2.2 8 0"/>'+DOTS([[9,9.5],[15,9.5]])),
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   ['🧭 Explorer','Explorer'],
   ['🔥 Tendances','Tendances'],
   ['📁 Mes vidéos','Mes vidéos'],
+  ['⏱️ Continuer','Continuer'],
   ['❤️ Favoris','Favoris']
 ];
 
@@ -49,7 +51,7 @@ function renderCats(){
 }
 
 function filterCat(cat){
-  if((cat==='📁 Mes vidéos'||cat==='❤️ Favoris') && !requireLogin('Connectez-vous pour accéder à cette section')) return;
+  if((cat==='📁 Mes vidéos'||cat==='⏱️ Continuer'||cat==='❤️ Favoris') && !requireLogin('Connectez-vous pour accéder à cette section')) return;
   activeCategory = cat;
   searchQuery = '';
   const si = document.getElementById('searchInput');

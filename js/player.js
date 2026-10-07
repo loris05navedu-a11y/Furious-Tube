@@ -5,16 +5,19 @@ let curId=null,curUploaderId=null,curUploaderName=null;
 function urlVideoId(){return new URLSearchParams(location.search).get('v');}
 
 function openPlayer(v){
-  const pov=document.getElementById('pov');
-  const wasOpen=pov.classList.contains('open');
+  const pov=document.getElementById(‘pov’);
+  const wasOpen=pov.classList.contains(‘open’);
   curId=v.id;curUploaderId=v.uploaderId;curUploaderName=v.uploader;
-  document.getElementById('ptitle').textContent=v.title;
-  document.title=v.title+' — FuriousTubes';
-  document.getElementById('pcat').textContent=v.category||'';
-  document.getElementById('pcat').style.display=v.category?'':'none';
-  document.getElementById('pstats').textContent=fmtViews(v)+' · '+fmtCount((v.likes||[]).length)+' J’aime · '+fmtAgo(v.date);
+  document.getElementById(‘ptitle’).textContent=v.title;
+  document.title=v.title+’ — FuriousTubes’;
+  document.getElementById(‘pcat’).textContent=v.category||’’;
+  document.getElementById(‘pcat’).style.display=v.category?’’:’none’;
+  document.getElementById(‘pstats’).textContent=fmtViews(v)+’ · ‘+fmtCount((v.likes||[]).length)+’ J’aime · ‘+fmtAgo(v.date);
   countView(v);
-  document.getElementById('pdate').textContent=v.date?'· '+fmtDate(v.date):'';
+  addToHistory(v);
+  recordActivity(‘view’, v.id);
+  trackSession();
+  document.getElementById(‘pdate’).textContent=v.date?’· ‘+fmtDate(v.date):’’;
   const av=document.getElementById('pav');
   if(v.uploaderAvatar){av.innerHTML='<img alt="">';av.querySelector('img').src=v.uploaderAvatar;}
   else av.textContent=(v.uploader||'?')[0].toUpperCase();
@@ -129,6 +132,7 @@ function doLike(){
   }
 
   // Save in background
+  if(!wasLiked) recordActivity('like', curId);
   getBin(CONFIG.VIDEOS_BIN_ID).then(videos=>{
     const idx=videos.findIndex(v=>v.id===curId);if(idx===-1)return;
     videos[idx].likes=videos[idx].likes||[];
