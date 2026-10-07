@@ -4,7 +4,7 @@ let searchQuery = '', sortMode = 'recent';
 const SORTS = [['recent','Plus récentes'],['viewed','Plus vues'],['liked','Plus aimées'],['commented','Plus commentées']];
 
 const nLikes = v => (v.likes||[]).length;
-const nComments = v => (v.comments||[]).length;
+const nComments = v => commentList(v).length;
 const nViews = v => v.views||0;
 const fmtViews = v => { const n=nViews(v); return fmtCount(n)+(n>1?' vues':' vue'); };
 
@@ -28,7 +28,7 @@ function countView(v){
 
 function sortVideos(list, mode){
   const a = [...list];
-  if(mode==='trending'){const sc=v=>nViews(v)+nLikes(v)*5+nComments(v)*3;a.sort((x,y)=>sc(y)-sc(x)||y.date-x.date);}
+  if(mode==='trending') return trendingList(a);
   else if(mode==='viewed') a.sort((x,y)=>nViews(y)-nViews(x)||y.date-x.date);
   else if(mode==='liked') a.sort((x,y)=>nLikes(y)-nLikes(x)||y.date-x.date);
   else if(mode==='commented') a.sort((x,y)=>nComments(y)-nComments(x)||y.date-x.date);
@@ -108,43 +108,9 @@ async function loadFeed(useCache=false){
     if(!useCache || !cachedVideos){
       cachedVideos = await getBin(CONFIG.VIDEOS_BIN_ID);
     }
+    if(currentUser) await ensureUsers();
     renderFeed(cachedVideos.filter(v=>v.id&&!v.hidden));
   }catch(e){renderFeed([]);toast('Erreur de chargement','er');}
-}
-
-// ── Algorithme Pour toi ──
-function getPersonalizedFeed(videos) {
-  if(!currentUser) {
-    // Pas connecté : vidéos populaires
-    return [...videos].sort((a,b)=>(b.likes||[]).length-(a.likes||[]).length);
-  }
-
-  // Analyser les goûts de l'utilisateur
-  const likedVideos = videos.filter(v=>(v.likes||[]).includes(currentUser.id));
-  const commentedVideos = videos.filter(v=>(v.comments||[]).some(c=>c.authorId===currentUser.id));
-  const watchedUploaders = new Set([
-    ...likedVideos.map(v=>v.uploaderId),
-    ...commentedVideos.map(v=>v.uploaderId)
-  ]);
-  const likedCategories = {};
-  [...likedVideos, ...commentedVideos].forEach(v=>{
-    if(v.category) likedCategories[v.category]=(likedCategories[v.category]||0)+1;
-  });
-
-  // Score chaque vidéo
-  const scored = videos.map(v=>{
-    let score = 0;
-    score += (v.likes||[]).length * 2;           // popularité
-    score += (v.comments||[]).length * 1.5;       // engagement
-    if(watchedUploaders.has(v.uploaderId)) score += 15; // créateur aimé
-    if(likedCategories[v.category]) score += likedCategories[v.category] * 10; // catégorie aimée
-    score += Math.random() * 3;                   // un peu d'aléatoire
-    // Pénaliser les vidéos déjà likées
-    if((v.likes||[]).includes(currentUser.id)) score -= 5;
-    return {...v, _score: score};
-  });
-
-  return scored.sort((a,b)=>b._score-a._score);
 }
 
 function findVideo(id){return (cachedVideos||[]).find(v=>v.id===id)||null;}

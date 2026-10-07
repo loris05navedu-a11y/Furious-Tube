@@ -5,19 +5,21 @@ let curId=null,curUploaderId=null,curUploaderName=null;
 function urlVideoId(){return new URLSearchParams(location.search).get('v');}
 
 function openPlayer(v){
-  const pov=document.getElementById(‘pov’);
-  const wasOpen=pov.classList.contains(‘open’);
+  const pov=document.getElementById('pov');
+  const wasOpen=pov.classList.contains('open');
+  if(wasOpen) recordWatchProgress();
   curId=v.id;curUploaderId=v.uploaderId;curUploaderName=v.uploader;
-  document.getElementById(‘ptitle’).textContent=v.title;
-  document.title=v.title+’ — FuriousTubes’;
-  document.getElementById(‘pcat’).textContent=v.category||’’;
-  document.getElementById(‘pcat’).style.display=v.category?’’:’none’;
-  document.getElementById(‘pstats’).textContent=fmtViews(v)+’ · ‘+fmtCount((v.likes||[]).length)+’ J’aime · ‘+fmtAgo(v.date);
+  document.getElementById('ptitle').textContent=v.title;
+  document.title=v.title+' — FuriousTubes';
+  document.getElementById('pcat').textContent=v.category||'';
+  document.getElementById('pcat').style.display=v.category?'':'none';
+  document.getElementById('pstats').textContent=fmtViews(v)+' · '+fmtCount((v.likes||[]).length)+' J’aime · '+fmtAgo(v.date);
   countView(v);
   addToHistory(v);
-  recordActivity(‘view’, v.id);
+  recordWatchStart(v.id);
+  recordActivity('view', v.id);
   trackSession();
-  document.getElementById(‘pdate’).textContent=v.date?’· ‘+fmtDate(v.date):’’;
+  document.getElementById('pdate').textContent=v.date?'· '+fmtDate(v.date):'';
   const av=document.getElementById('pav');
   if(v.uploaderAvatar){av.innerHTML='<img alt="">';av.querySelector('img').src=v.uploaderAvatar;}
   else av.textContent=(v.uploader||'?')[0].toUpperCase();
@@ -61,6 +63,7 @@ function hidePlayer(){
   pov.setAttribute('aria-hidden','true');
   document.body.classList.remove('watching');
   document.title='FuriousTubes';
+  recordWatchProgress();
   FTPlayer.unload();
   curId=null;curUploaderId=null;curUploaderName=null;
   resumeMusic();
@@ -90,13 +93,7 @@ function openFromUrl(){
 
 // « À suivre » : même catégorie et même créateur d'abord, puis les plus récentes
 function renderUpNext(v){
-  const list=(cachedVideos||[]).filter(x=>x.id&&!x.hidden&&x.id!==v.id).map(x=>{
-    let s=0;
-    if(x.category&&x.category===v.category)s+=3;
-    if(x.uploaderId===v.uploaderId)s+=2;
-    s+=Math.max(0,1-(Date.now()-(x.date||0))/(30*864e5));
-    return{x,s};
-  }).sort((a,b)=>b.s-a.s).slice(0,20).map(o=>o.x);
+  const list=relatedVideos(v,(cachedVideos||[]).filter(x=>x.id&&!x.hidden),20);
   document.getElementById('upNext').innerHTML=list.length
     ?list.map(videoCardHtml).join('')
     :'<div class="no-comments">Aucune autre vidéo pour le moment.</div>';

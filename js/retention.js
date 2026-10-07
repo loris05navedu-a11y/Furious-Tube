@@ -156,22 +156,6 @@ function recordActivity(type, videoId) {
   }
 }
 
-// ── Trending improved with recency boost ──
-function getTrendingFeed(videos) {
-  const now = Date.now();
-  const oneDay = 86400000;
-  const scored = videos.map(v => {
-    const age = now - v.date;
-    const recencyBoost = Math.max(0, 1 - (age / (7 * oneDay))); // decay over 7 days
-    const viewScore = (v.views || 0) * 1;
-    const likeScore = ((v.likes || []).length) * 5;
-    const commentScore = ((v.comments || {}).size || Object.keys(v.comments || {}).length) * 3;
-    const score = (viewScore + likeScore + commentScore) * (1 + recencyBoost * 0.5);
-    return { ...v, _score: score };
-  });
-  return scored.sort((a, b) => b._score - a._score);
-}
-
 // ── Retention score : mesure comment un utilisateur revient ──
 function getUserRetentionScore(uid) {
   let hist = {};
