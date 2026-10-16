@@ -47,3 +47,20 @@ function changeMusic(){
   document.getElementById('customYtUrl').value='';
   toast('Musique changée 🎵','ok');
 }
+
+// ── Page masquée (onglet quitté, appli en arrière-plan, écran verrouillé) : tout le son s'arrête, puis reprend au retour ──
+let bgMusic=false,bgMedia=[];
+function suspendAudio(){
+  if(bgMusic||bgMedia.length) return;
+  try{bgMusic=!!(ytPlayer&&ytPlayer.getPlayerState&&ytPlayer.getPlayerState()===YT.PlayerState.PLAYING);if(bgMusic)ytPlayer.pauseVideo();}catch(e){bgMusic=false;}
+  bgMedia=[...document.querySelectorAll('video,audio')].filter(m=>!m.paused&&!m.ended);
+  bgMedia.forEach(m=>m.pause());
+}
+function restoreAudio(){
+  if(bgMusic&&!musicPaused){try{ytPlayer.playVideo();}catch(e){}}
+  bgMedia.forEach(m=>{if(m.isConnected)m.play().catch(()=>{});});
+  bgMusic=false;bgMedia=[];
+}
+document.addEventListener('visibilitychange',()=>{document.hidden?suspendAudio():restoreAudio();});
+window.addEventListener('pagehide',suspendAudio);
+window.addEventListener('pageshow',e=>{if(e.persisted&&!document.hidden)restoreAudio();});
