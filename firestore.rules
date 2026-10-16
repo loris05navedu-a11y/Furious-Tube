@@ -91,6 +91,19 @@ service cloud.firestore {
               || (a.get('banned', false) == false && b.get('bannedUntil', null) != null && b.bannedUntil < nowMs()))
           && (!c.hasAny(['username', 'usernameChangedAt']) || nameChangeOk(a, b));
       }
+      // Préférences de recommandation (historique de visionnage, favoris) : privées, lisibles et modifiables par leur seul propriétaire.
+      // Les plafonds doivent rester identiques à PREF_LIMITS dans js/sync.js.
+      match /private/{docId} {
+        allow read, delete: if request.auth != null && request.auth.uid == uid;
+        allow create, update: if request.auth != null && request.auth.uid == uid && docId == 'prefs' && validPrefs(request.resource.data);
+      }
+      function validPrefs(d) {
+        return d.keys().hasOnly(['watch', 'favs', 'hist', 'updated'])
+          && d.get('watch', {}) is map && d.get('watch', {}).size() <= 200
+          && d.get('favs', {}) is map && d.get('favs', {}).size() <= 300
+          && d.get('hist', {}) is map && d.get('hist', {}).size() <= 100
+          && d.get('updated', 0) is number;
+      }
       // Abonnement : chacun n'ajoute / retire que son propre uid dans la liste d'abonnés
       function subscribeUpdate(uid) {
         let a = request.resource.data;

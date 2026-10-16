@@ -102,6 +102,21 @@ await t('user delete other video',V(eve,'v1').delete(),false);
 await t('owner delete',V(bob,'v1').delete(),true);
 await t('staff delete',V(stf,'v2').delete(),true);
 await t('admin anything',V(adm,'n1').update({title:'x'}),true);
+// préférences de recommandation (privées)
+const P=(db,id,d='prefs')=>db.doc('users/'+id+'/private/'+d);
+const prefs={watch:{v1:{f:0.5,n:1,t:1}},favs:{v1:5},hist:{v1:5},updated:1};
+await t('prefs owner write',P(bob,'bob').set(prefs),true);
+await t('prefs owner read',P(bob,'bob').get(),true);
+await t('prefs other read',P(eve,'bob').get(),false);
+await t('prefs anon read',P(anon,'bob').get(),false);
+await t('prefs other write',P(eve,'bob').set(prefs),false);
+await t('prefs admin read others',P(adm,'bob').get(),false);
+await t('prefs unknown key',P(bob,'bob').set({...prefs,admin:true}),false);
+await t('prefs other doc name',P(bob,'bob','x').set(prefs),false);
+await t('prefs watch not a map',P(bob,'bob').set({watch:[1]}),false);
+await t('prefs too many entries',P(bob,'bob').set({hist:Object.fromEntries(Array.from({length:101},(_,i)=>['v'+i,1]))}),false);
+await t('prefs max entries',P(bob,'bob').set({hist:Object.fromEntries(Array.from({length:100},(_,i)=>['v'+i,1]))}),true);
+await t('prefs owner delete',P(bob,'bob').delete(),true);
 // bins
 await t('bins write v1',anon.doc('bins/x').set({a:1}),false);
 await t('bins write auth',bob.doc('bins/x').set({items:[]}),true);

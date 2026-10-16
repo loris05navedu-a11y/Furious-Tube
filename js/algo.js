@@ -4,8 +4,6 @@
 
 const DAY = 864e5;
 const commentList = v => Array.isArray(v.comments) ? v.comments : Object.values(v.comments || {});
-const jget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
-const jset = (k, o) => { try { localStorage.setItem(k, JSON.stringify(o)); } catch (e) {} };
 
 // ── Signaux de visionnage : fraction réellement regardée de chaque vidéo ──
 // ft_watch = { id: { t: dernier visionnage, f: fraction max regardée (0..1), n: nombre de visionnages } }
@@ -13,20 +11,21 @@ function recordWatchProgress() {
   if (!currentUser || !curId) return;
   const el = document.getElementById('pvid');
   if (!el || !isFinite(el.duration) || el.duration <= 0) return;
-  const w = jget('ft_watch', {});
+  const w = pget('watch');
   const e = w[curId] || { f: 0, n: 0 };
-  e.f = Math.max(e.f || 0, Math.min(1, el.currentTime / el.duration));
-  e.t = Date.now();
+  const f = Math.max(e.f || 0, Math.min(1, el.currentTime / el.duration));
+  if (w[curId] && f - (e.f || 0) < 0.02) return;   // pas d'écriture (ni de synchro) pour une progression négligeable
+  e.f = f; e.t = Date.now();
   w[curId] = e;
-  jset('ft_watch', w);
+  pset('watch', w);
 }
 function recordWatchStart(id) {
   if (!currentUser) return;
-  const w = jget('ft_watch', {});
+  const w = pget('watch');
   const e = w[id] || { f: 0, n: 0 };
   e.n = (e.n || 0) + 1; e.t = Date.now();
   w[id] = e;
-  jset('ft_watch', w);
+  pset('watch', w);
 }
 window.addEventListener('pagehide', recordWatchProgress);
 document.addEventListener('visibilitychange', () => { if (document.hidden) recordWatchProgress(); });
@@ -65,7 +64,7 @@ function subscribedSet() {
   return s;
 }
 function buildProfile(all) {
-  const p = { cat: {}, ch: {}, tok: {}, has: false, watch: jget('ft_watch', {}), subs: subscribedSet(), liked: new Set(), disliked: new Set() };
+  const p = { cat: {}, ch: {}, tok: {}, has: false, watch: pget('watch'), subs: subscribedSet(), liked: new Set(), disliked: new Set() };
   if (!currentUser) return p;
   const now = Date.now(), byId = new Map(all.map(v => [v.id, v]));
   const add = (v, w) => {

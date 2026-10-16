@@ -82,6 +82,19 @@ const ban=await C.evaluate(async(id)=>{window.confirm=()=>true;try{const r=await
 check('staff bans carl 2h',ban===true);
 const until=await A.evaluate(async(id)=>{const u=await getBin(CONFIG.USERS_BIN_ID);return u.find(x=>x.id===id).bannedUntil-Date.now();},carlId);
 check('ban ~2h',until>7000000&&until<=7200000);
-console.log('errors',[A,B,C,D].map(p=>p.errs));
+// ── Synchronisation des recommandations (historique, favoris, progression) ──
+const bobId=await C.evaluate(()=>currentUser.id);
+const pushed=await C.evaluate(async()=>{addToHistory({id:'vid1'});recordWatchStart('vid1');toggleFavorite('vid1');await syncPush();return (await prefsRef(currentUser.id).get()).data();});
+check('prefs pushed to Firestore',!!pushed&&pushed.favs.vid1>0&&!!pushed.hist.vid1&&pushed.watch.vid1.n===1);
+const E=await page();await E.goto('http://localhost:8123/index.html');await E.waitForTimeout(1500);
+await E.evaluate(async()=>{await fbAuth.signInWithEmailAndPassword('bob@example.com','secret12');});await E.waitForTimeout(2500);
+const restored=await E.evaluate(()=>({fav:isFavorite('vid1'),hist:Object.keys(pget('hist')),n:(pget('watch').vid1||{}).n}));
+check('new device restores favorites/history/watch',restored.fav&&restored.hist.includes('vid1')&&restored.n===1);
+await E.evaluate(async()=>{toggleFavorite('vid1');await syncPush();});
+const unfav=await C.evaluate(async()=>{await syncPull();return isFavorite('vid1');});
+check('un-favorite propagates to other device',unfav===false);
+const leak=await D.evaluate(async(id)=>{try{await prefsRef(id).get();return 'readable';}catch(e){return e.code;}},bobId);
+check("other account cannot read someone's prefs",leak==='permission-denied');
+console.log('errors',[A,B,C,D,E].map(p=>p.errs));
 await b.close();process.exit(fails?1:0);
 })();

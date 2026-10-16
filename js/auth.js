@@ -201,9 +201,11 @@ function finishLogin(user,fbUser){
   document.getElementById('authOv').classList.remove('open');
   renderHeader();
   if(!wasLogged) startTimeTracking();
+  syncPull();
 }
 
 async function doLogout(){
+  try{await syncFlush();}catch(e){}
   try{if(fbAuth) await fbAuth.signOut();}catch(e){}
   clearSession();renderHeader();toast('À bientôt !','ok');
 }

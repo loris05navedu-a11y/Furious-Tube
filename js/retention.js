@@ -3,44 +3,35 @@
 // ── Watch History ──
 function addToHistory(v) {
   if(!currentUser || !v.id) return;
-  let hist = {};
-  try { hist = JSON.parse(localStorage.getItem('ft_history') || '{}'); } catch(e) {}
+  const hist = pget('hist');
   hist[v.id] = Date.now();
-  try { localStorage.setItem('ft_history', JSON.stringify(hist)); } catch(e) {}
+  pset('hist', hist);
 }
 
 function getWatchHistory(allVideos) {
-  let hist = {};
-  try { hist = JSON.parse(localStorage.getItem('ft_history') || '{}'); } catch(e) {}
+  const hist = pget('hist');
   const ids = Object.keys(hist).sort((a, b) => hist[b] - hist[a]).slice(0, 20);
   return ids.map(id => allVideos.find(v => v.id === id)).filter(Boolean);
 }
 
-// ── Favorites/Watchlist ──
+// ── Favorites/Watchlist (valeur négative = retiré, pour que la suppression se synchronise) ──
 function toggleFavorite(vid) {
   if(!currentUser) { openAuth('login'); return; }
-  let favs = {};
-  try { favs = JSON.parse(localStorage.getItem('ft_favs') || '{}'); } catch(e) {}
-  if(favs[vid]) {
-    delete favs[vid];
-  } else {
-    favs[vid] = Date.now();
-  }
-  try { localStorage.setItem('ft_favs', JSON.stringify(favs)); } catch(e) {}
+  const favs = pget('favs');
+  const was = favs[vid] > 0;
+  favs[vid] = was ? -Date.now() : Date.now();
+  pset('favs', favs);
   renderFeed(cachedVideos || []);
-  toast(favs[vid] ? '❤️ Ajouté aux favoris' : '🗑 Retiré des favoris', 'ok');
+  toast(!was ? '❤️ Ajouté aux favoris' : '🗑 Retiré des favoris', 'ok');
 }
 
 function isFavorite(vid) {
-  let favs = {};
-  try { favs = JSON.parse(localStorage.getItem('ft_favs') || '{}'); } catch(e) {}
-  return !!favs[vid];
+  return pget('favs')[vid] > 0;
 }
 
 function getFavorites(allVideos) {
-  let favs = {};
-  try { favs = JSON.parse(localStorage.getItem('ft_favs') || '{}'); } catch(e) {}
-  const ids = Object.keys(favs).sort((a, b) => favs[b] - favs[a]);
+  const favs = pget('favs');
+  const ids = Object.keys(favs).filter(id => favs[id] > 0).sort((a, b) => favs[b] - favs[a]);
   return ids.map(id => allVideos.find(v => v.id === id)).filter(Boolean);
 }
 
@@ -158,9 +149,6 @@ function recordActivity(type, videoId) {
 
 // ── Retention score : mesure comment un utilisateur revient ──
 function getUserRetentionScore(uid) {
-  let hist = {};
-  try { hist = JSON.parse(localStorage.getItem('ft_history') || '{}'); } catch(e) {}
-
   let sessions = [];
   try { sessions = JSON.parse(localStorage.getItem('ft_sessions') || '[]'); } catch(e) {}
 
